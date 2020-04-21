@@ -58,6 +58,9 @@ class SAR_Project:
     ###                         ###
     ###############################
 
+        self.docid = 0
+        self.newid = 0
+
 
     def set_showall(self, v):
         """
@@ -184,6 +187,19 @@ class SAR_Project:
         #################
         ### COMPLETAR ###
         #################
+
+            self.docid[self.docid] = filename
+            for new in jlist:
+                self.news[self.newid] = (new["date"], new["title"])
+                nTokens = self.tokenize(new["article"])
+                for token in nTokens:
+                    if not self.index.get(token, 0):
+                        self.index[token] = []
+                    self.index[token].append((self.docid, self.newid))
+                self.newid = self.newid + 1
+            self.docid = self.docid + 1
+            self.newid = 0
+
 
 
 
