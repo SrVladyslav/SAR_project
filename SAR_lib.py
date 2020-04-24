@@ -302,6 +302,37 @@ class SAR_Project:
         ## COMPLETAR PARA TODAS LAS VERSIONES ##
         ########################################
 
+        result = []
+        qParts = query.split()
+        i = 0
+        if qParts[i] == "AND" or qParts[i] == "OR":
+            return result
+        if len(qParts) < 3:
+            if qParts[1] == "NOT" & len(qParts) == 2:
+                return self.reverse_posting(self.get_posting(qParts[2]).sort())
+            elif qParts[1] != "NOT":
+                return self.get_posting(qParts[i]).sort()
+            else:
+                return result
+        else:
+            while i < len(qParts) - 1:
+                if qParts[i] == "NOT":
+                    result = self.reverse_posting(self.get_posting(qParts[i + 1]).sort())
+                    i = i + 1
+                else:
+                    if qParts[i] == "AND":
+                        result = self.and_posting(result, self.get_posting(qParts[i + 1]).sort())
+                        i = i + 1
+                    elif qParts[i] == "OR":
+                        result = self.or_posting(result, self.get_posting(qParts[i + 1]).sort())
+                        i = i + 1
+                    else:
+                        result = self.get_posting(qParts[i]).sort()
+                i = i + 1
+            return result
+
+
+
  
 
 
@@ -322,10 +353,11 @@ class SAR_Project:
         return: posting list
 
         """
-        pass
+        
         ########################################
         ## COMPLETAR PARA TODAS LAS VERSIONES ##
         ########################################
+        return self.index[term]
 
 
 
@@ -580,6 +612,8 @@ class SAR_Project:
         ########################################
         ## COMPLETAR PARA TODAS LAS VERSIONES ##
         ########################################
+
+        return result
 
 
 
