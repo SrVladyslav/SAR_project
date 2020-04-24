@@ -422,10 +422,23 @@ class SAR_Project:
 
         """
         
-        pass
         ########################################
         ## COMPLETAR PARA TODAS LAS VERSIONES ##
         ########################################
+        result = []
+        i = 0
+        j = 0
+        while i < len(p1) & j < len(p2):
+            if p1[i] == p2[j]:
+                result.append(p2[j])
+                i = i + 1
+                j = j + 1
+            elif p1[i] < p2[j]:
+                i = i + 1
+            else:
+                j = j + 1
+
+        return result
 
 
 
@@ -443,10 +456,35 @@ class SAR_Project:
         """
 
         
-        pass
+        
         ########################################
         ## COMPLETAR PARA TODAS LAS VERSIONES ##
         ########################################
+
+        result = []
+        i = 0
+        j = 0
+        while i < len(p1) & j < len(p2):
+            if p1[i] == p2[j]:
+                result.append(p2[j])
+                i = i + 1
+                j = j + 1
+            elif p1[i] < p2[j]:
+                result.append(p1[i])
+                i = i + 1
+            else:
+                result.append(p2[j])
+                j = j + 1
+        
+        while i < len(p1):
+            result.append(p1[i])
+            i = i + 1
+
+        while j < len(p2):
+            result.append(p2[j])
+            j = j + 1
+
+        return result
 
 
     def minus_posting(self, p1, p2):
