@@ -1,3 +1,6 @@
+# version 1.1
+
+
 import argparse
 import pickle
 import sys
@@ -27,9 +30,6 @@ if __name__ == "__main__":
     
     group0.add_argument('-N', '--snippet', dest='snippet', action='store_true', default=False, 
                     help='show a snippet of the retrieved documents.')
-
-    #group0.add_argument('-I', '--title', dest='title', action='store_true', default=False,
-     #               help='show the date and title of the retrieved documents.')
 
     group0.add_argument('-C', '--count', dest='count', action='store_true', default=False, 
                     help='show only the number of documents retrieved.')
@@ -69,7 +69,7 @@ if __name__ == "__main__":
     if args.test is not None:
         # opt: -T, testing
 
-        with open(args.test) as fh:
+        with open(args.test, encoding='utf-8') as fh:
             lines = fh.read().split('\n')
             for line in lines:
                 if len(line) > 0 and not line.startswith('#'):
@@ -89,7 +89,7 @@ if __name__ == "__main__":
 
     elif args.qlist is not None:
         # opt: -L, una lista de queries
-        with open(args.qlist) as fh:
+        with open(args.qlist, encoding='utf-8') as fh:
             queries = fh.read().split('\n')
             queries.pop()
             for query in queries:
