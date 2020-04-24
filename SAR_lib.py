@@ -401,12 +401,36 @@ class SAR_Project:
         return: posting list con todos los newid exceptos los contenidos en p
 
         """
+
         
-        pass
         ########################################
         ## COMPLETAR PARA TODAS LAS VERSIONES ##
         ########################################
 
+        allnews = []
+        docids = self.docs.keys().sort()
+        newids = self.news.keys().sort()
+        for doc in docids:
+            for new in newids:
+                allnews.append((doc, new))
+        result = []
+        i = 0
+        j = 0
+        while i < len(p) & j < len(allnews):
+            if p[i] == allnews[j]:
+                i = i + 1
+                j = j + 1
+            elif p[i] < allnews[j]:
+                i = i + 1
+            else:
+                result.append(allnews[j])
+                j = j + 1
+        
+        while j < len(allnews):
+            result.append(allnews[j])
+            j = j + 1
+
+        return result
 
 
     def and_posting(self, p1, p2):
