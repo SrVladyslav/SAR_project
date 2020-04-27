@@ -190,7 +190,7 @@ class SAR_Project:
 
             self.docid[self.docid] = filename
             for new in jlist:
-                self.news[self.newid] = (new["date"], new["title"])
+                self.news[self.newid] = (self.docid, new["date"], new["title"])
                 nTokens = self.tokenize(new["article"])
                 for token in nTokens:
                     if not self.index.get(token, 0):
@@ -198,7 +198,6 @@ class SAR_Project:
                     self.index[token].append((self.docid, self.newid))
                 self.newid = self.newid + 1
             self.docid = self.docid + 1
-            self.newid = 0
 
 
 
@@ -440,11 +439,9 @@ class SAR_Project:
         ########################################
 
         allnews = []
-        docids = self.docs.keys().sort()
         newids = self.news.keys().sort()
-        for doc in docids:
-            for new in newids:
-                allnews.append((doc, new))
+        for new in newids:
+            allnews.append((self.news[new][0], new))
         result = []
         i = 0
         j = 0
