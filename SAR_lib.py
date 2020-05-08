@@ -51,7 +51,6 @@ class SAR_Project:
         self.use_stemming = False # valor por defecto, se cambia con self.set_stemming()
         self.use_ranking = False  # valor por defecto, se cambia con self.set_ranking()
 
-
     ###############################
     ###                         ###
     ###      CONFIGURACION      ###
@@ -190,12 +189,14 @@ class SAR_Project:
 
             self.docid[self.docid] = filename
             for new in jlist:
-                self.news[self.newid] = (self.docid, new["date"], new["title"])
                 nTokens = self.tokenize(new["article"])
+                nt = 0
                 for token in nTokens:
                     if not self.index.get(token, 0):
                         self.index[token] = []
                     self.index[token].append((self.docid, self.newid))
+                    nt = nt + 0
+                self.news[self.newid] = (self.docid, new["date"], new["title"], nt)
                 self.newid = self.newid + 1
             self.docid = self.docid + 1
 
@@ -262,8 +263,19 @@ class SAR_Project:
         ## COMPLETAR PARA TODAS LAS VERSIONES ##
         ########################################
 
-        
-
+        print("=" * 40)
+        print("Number of indexed days: ")
+        print("-" * 40)
+        print("Number of indexed news: " + len(self.news))
+        print("-" * 40)
+        print("TOKENS:")
+        ntokens = 0
+        for new in self.news.keys():
+            ntokens = ntokens + self.news[new][4]
+        print("\tof tokens in \'article\': " + ntokens)
+        print("-" * 40)
+        print("Positional queries are NOT alowed.")
+        print("=" * 40)
 
 
 
