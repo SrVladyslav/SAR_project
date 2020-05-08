@@ -194,7 +194,8 @@ class SAR_Project:
                 for token in nTokens:
                     if not self.index.get(token, 0):
                         self.index[token] = []
-                    self.index[token].append((self.docid, self.newid))
+                    if (self.docid, self.newid) not in self.index[token]:
+                        self.index[token].append((self.docid, self.newid))
                     nt = nt + 0
                 self.news[self.newid] = (self.docid, new["date"], new["title"], new["keywords"], nt)
                 self.newid = self.newid + 1
