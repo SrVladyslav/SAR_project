@@ -196,7 +196,7 @@ class SAR_Project:
                         self.index[token] = []
                     self.index[token].append((self.docid, self.newid))
                     nt = nt + 0
-                self.news[self.newid] = (self.docid, new["date"], new["title"], nt)
+                self.news[self.newid] = (self.docid, new["date"], new["title"], new["keywords"], nt)
                 self.newid = self.newid + 1
             self.docid = self.docid + 1
 
@@ -622,7 +622,30 @@ class SAR_Project:
         ## COMPLETAR PARA TODAS LAS VERSIONES ##
         ########################################
 
-        return result
+        print("=" * 40)
+        print("Query: " + query)
+        print("Number of results: " + len(result))
+        nr = 1
+        for r in result:
+            new = self.news[r[1]]
+            if not self.show_snippet:
+                print("#" + nr + "\t(0) (" + r[1] + ") (" + new[1] + ") " + new[2] + " (" + new[3] + ")")
+            else:
+                print("#" + nr)
+                print("Score: " + 0)
+                print(r[1])
+                print("Date: " + new[1])
+                print("Title: " + new[2])
+                print("Keywords: " + new[3])
+                
+
+            nr = nr + 1
+            if nr > 100 and not self.show_all:
+                break
+            elif nr <= len(result):
+                print("-" * 40)
+        
+        print("=" * 40)
 
 
 
