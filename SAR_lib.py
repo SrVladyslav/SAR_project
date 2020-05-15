@@ -236,6 +236,7 @@ class SAR_Project:
         ####################################################
 
 
+
     
     def make_permuterm(self):
         """
@@ -244,7 +245,16 @@ class SAR_Project:
         Crea el indice permuterm (self.ptindex) para los terminos de todos los indices.
 
         """
-        pass
+        for termino in self.index.keys():
+            permutations = []
+
+            for i in range(len(termino)-1):
+                termino = termino[1:] + termino[0]
+                permutations.append(termino)
+
+            self.ptindex[termino] = permutations
+
+        print(self.ptindex)
         ####################################################
         ## COMPLETAR PARA FUNCIONALIDAD EXTRA DE STEMMING ##
         ####################################################
@@ -267,13 +277,13 @@ class SAR_Project:
         print("=" * 40)
         print("Number of indexed days: ")
         print("-" * 40)
-        print("Number of indexed news: " + len(self.news))
+        print("Number of indexed news: " + str(len(self.news)))
         print("-" * 40)
         print("TOKENS:")
         ntokens = 0
         for new in self.news.keys():
             ntokens = ntokens + self.news[new][4]
-        print("\tof tokens in \'article\': " + ntokens)
+        print("\tof tokens in \'article\': " + str(ntokens))
         print("-" * 40)
         print("Positional queries are NOT alowed.")
         print("=" * 40)
