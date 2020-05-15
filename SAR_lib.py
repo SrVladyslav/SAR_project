@@ -13,7 +13,7 @@ class SAR_Project:
 
     Se deben completar los metodos que se indica.
     Se pueden añadir nuevas variables y nuevos metodos
-    Los metodos que se añadan se deberan documentar en el codigo y explicar en la memoria
+    Los metodos que se añadan se deberan documentar en el codigo y explicar en la memoria.Modificación
     """
 
     # lista de campos, el booleano indica si se debe tokenizar el campo
@@ -56,6 +56,11 @@ class SAR_Project:
     ###      CONFIGURACION      ###
     ###                         ###
     ###############################
+
+    ############
+    ### Prueba##
+    ############
+
 
         self.docid = 0
         self.newid = 0
