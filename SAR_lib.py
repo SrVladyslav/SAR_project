@@ -354,7 +354,8 @@ class SAR_Project:
                         result = self.or_posting(result, self.get_posting(qParts[i + 1]).sort())
                         i = i + 1
                     else:
-                        result = self.get_posting(qParts[i]).sort()
+                        result = self.get_posting(qParts[i])
+                        result.sort()
                 i = i + 1
             return result
 
@@ -387,7 +388,8 @@ class SAR_Project:
         
 
         # NO me lo toqueis, es mio
-        return self.index[term]
+        #return self.index[term]
+        return self.index.get(term, [])
 
 
 
@@ -646,15 +648,15 @@ class SAR_Project:
 
         print("=" * 40)
         print("Query: " + query)
-        print("Number of results: " + len(result))
+        print("Number of results: " + str(len(result)))
         nr = 1
         for r in result:
             new = self.news[r[1]]
             if not self.show_snippet:
-                print("#" + nr + "\t(0) (" + r[1] + ") (" + new[1] + ") " + new[2] + " (" + new[3] + ")")
+                print("#" + str(nr) + "\t(0) (" + r[1] + ") (" + new[1] + ") " + new[2] + " (" + new[3] + ")")
             else:
-                print("#" + nr)
-                print("Score: " + 0)
+                print("#" + str(nr))
+                print("Score: " + str(0))
                 print(r[1])
                 print("Date: " + new[1])
                 print("Title: " + new[2])
