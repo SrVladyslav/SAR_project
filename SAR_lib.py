@@ -374,6 +374,9 @@ class SAR_Project:
         ########################################
         ## COMPLETAR PARA TODAS LAS VERSIONES ##
         ########################################
+        
+
+        # NO me lo toqueis, es mio
         return self.index[term]
 
 
