@@ -60,6 +60,9 @@ class SAR_Project:
         self.docid = 0
         self.newid = 0
 
+        # Days counter
+        self.num_days = {}
+
 
     def set_showall(self, v):
         """
@@ -194,9 +197,10 @@ class SAR_Project:
                     self.index[token] = []
                 if (self.docid, self.newid) not in self.index[token]:
                     self.index[token].append((self.docid, self.newid))
-                nt = nt + 0
+                nt = nt + 1     
             self.news[self.newid] = (self.docid, new["date"], new["title"], new["keywords"], nt)
             self.newid += 1
+            self.num_days[new['date']] = True # Days counter
         self.docid += 1
 
 
@@ -275,16 +279,12 @@ class SAR_Project:
         ########################################
 
         print("=" * 40)
-        print("Number of indexed days: ")
+        print("Number of indexed days: " + str(len(self.num_days)))
         print("-" * 40)
         print("Number of indexed news: " + str(len(self.news)))
         print("-" * 40)
         print("TOKENS:")
-        ntokens = 0
-        for new in self.news.keys():
-            ntokens = ntokens + self.news[new][4]
-        print("\tof tokens in \'article\': " + str(ntokens))
-        print("-" * 40)
+        print("\tof tokens in \'article\': " + str(len(self.index)))
         print("Positional queries are NOT alowed.")
         print("=" * 40)
 
