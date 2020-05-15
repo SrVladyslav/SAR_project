@@ -344,14 +344,20 @@ class SAR_Project:
         else:
             while i < len(qParts) - 1:
                 if qParts[i] == "NOT":
-                    result = self.reverse_posting(self.get_posting(qParts[i + 1]).sort())
+                    nextP = self.get_posting(qParts[i + 1])
+                    nextP.sort()
+                    result = self.reverse_posting(nextP)
                     i = i + 1
                 else:
                     if qParts[i] == "AND":
-                        result = self.and_posting(result, self.get_posting(qParts[i + 1]).sort())
+                        nextP = self.get_posting(qParts[i + 1])
+                        nextP.sort()
+                        result = self.and_posting(result, nextP)
                         i = i + 1
                     elif qParts[i] == "OR":
-                        result = self.or_posting(result, self.get_posting(qParts[i + 1]).sort())
+                        nextP = self.get_posting(qParts[i + 1])
+                        nextP.sort()
+                        result = self.or_posting(result, nextP)
                         i = i + 1
                     else:
                         result = self.get_posting(qParts[i])
@@ -478,7 +484,7 @@ class SAR_Project:
         result = []
         i = 0
         j = 0
-        while i < len(p) & j < len(allnews):
+        while (i < len(p)) & (j < len(allnews)):
             if p[i] == allnews[j]:
                 i = i + 1
                 j = j + 1
@@ -514,7 +520,7 @@ class SAR_Project:
         result = []
         i = 0
         j = 0
-        while i < len(p1) & j < len(p2):
+        while (i < len(p1)) & (j < len(p2)):
             if p1[i] == p2[j]:
                 result.append(p2[j])
                 i = i + 1
@@ -550,7 +556,7 @@ class SAR_Project:
         result = []
         i = 0
         j = 0
-        while i < len(p1) & j < len(p2):
+        while (i < len(p1)) & (j < len(p2)):
             if p1[i] == p2[j]:
                 result.append(p2[j])
                 i = i + 1
@@ -653,14 +659,14 @@ class SAR_Project:
         for r in result:
             new = self.news[r[1]]
             if not self.show_snippet:
-                print("#" + str(nr) + "\t(0) (" + r[1] + ") (" + new[1] + ") " + new[2] + " (" + new[3] + ")")
+                print("#" + str(nr) + "\t(0) (" + str(r[1]) + ") (" + str(new[1]) + ") " + str(new[2]) + " (" + str(new[3]) + ")")
             else:
                 print("#" + str(nr))
                 print("Score: " + str(0))
-                print(r[1])
-                print("Date: " + new[1])
-                print("Title: " + new[2])
-                print("Keywords: " + new[3])
+                print(str(r[1]))
+                print("Date: " + str(new[1]))
+                print("Title: " + str(new[2]))
+                print("Keywords: " + str(new[3]))
                 
 
             nr = nr + 1
