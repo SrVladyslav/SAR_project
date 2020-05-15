@@ -65,6 +65,9 @@ class SAR_Project:
         self.docid = 0
         self.newid = 0
 
+        # Days counter
+        self.num_days = {}
+
 
     def set_showall(self, v):
         """
@@ -143,16 +146,15 @@ class SAR_Project:
         los argumentos adicionales "**args" solo son necesarios para las funcionalidades ampliadas
 
         """
-
         self.multifield = args['multifield']
         self.positional = args['positional']
         self.stemming = args['stem']
         self.permuterm = args['permuterm']
 
-        for dir, subdirs, files in os.walk(root):
+        for d, subdirs, files in os.walk(root):
             for filename in files:
                 if filename.endswith('.json'):
-                    fullname = os.path.join(dir, filename)
+                    fullname = os.path.join(d, filename)
                     self.index_file(fullname)
 
         ##########################################
@@ -191,20 +193,20 @@ class SAR_Project:
         #################
         ### COMPLETAR ###
         #################
-
-            self.docid[self.docid] = filename
-            for new in jlist:
-                nTokens = self.tokenize(new["article"])
-                nt = 0
-                for token in nTokens:
-                    if not self.index.get(token, 0):
-                        self.index[token] = []
-                    if (self.docid, self.newid) not in self.index[token]:
-                        self.index[token].append((self.docid, self.newid))
-                    nt = nt + 0
-                self.news[self.newid] = (self.docid, new["date"], new["title"], new["keywords"], nt)
-                self.newid = self.newid + 1
-            self.docid = self.docid + 1
+        self.docs[self.docid] = filename
+        for new in jlist:
+            nTokens = self.tokenize(new["article"])
+            nt = 0
+            for token in nTokens:
+                if not self.index.get(token, 0):
+                    self.index[token] = []
+                if (self.docid, self.newid) not in self.index[token]:
+                    self.index[token].append((self.docid, self.newid))
+                nt = nt + 1     
+            self.news[self.newid] = (self.docid, new["date"], new["title"], new["keywords"], nt)
+            self.newid += 1
+            self.num_days[new['date']] = True # Days counter
+        self.docid += 1
 
 
 
@@ -250,7 +252,12 @@ class SAR_Project:
         Crea el indice permuterm (self.ptindex) para los terminos de todos los indices.
 
         """
+        ####################################################
+        ## COMPLETAR PARA FUNCIONALIDAD EXTRA DE STEMMING ##
+        ####################################################
+        print("[ JOINING PERMUTERM ]")
         for termino in self.index.keys():
+            termino += '$'
             permutations = []
 
             for i in range(len(termino)-1):
@@ -260,9 +267,6 @@ class SAR_Project:
             self.ptindex[termino] = permutations
 
         print(self.ptindex)
-        ####################################################
-        ## COMPLETAR PARA FUNCIONALIDAD EXTRA DE STEMMING ##
-        ####################################################
 
 
 
@@ -280,16 +284,12 @@ class SAR_Project:
         ########################################
 
         print("=" * 40)
-        print("Number of indexed days: ")
+        print("Number of indexed days: " + str(len(self.num_days)))
         print("-" * 40)
         print("Number of indexed news: " + str(len(self.news)))
         print("-" * 40)
         print("TOKENS:")
-        ntokens = 0
-        for new in self.news.keys():
-            ntokens = ntokens + self.news[new][4]
-        print("\tof tokens in \'article\': " + str(ntokens))
-        print("-" * 40)
+        print("\tof tokens in \'article\': " + str(len(self.index)))
         print("Positional queries are NOT alowed.")
         print("=" * 40)
 
@@ -441,10 +441,10 @@ class SAR_Project:
         return: posting list
 
         """
-
         ##################################################
         ## COMPLETAR PARA FUNCIONALIDAD EXTRA PERMUTERM ##
         ##################################################
+        print("HOLA PUT@S, ESA WEA ENTRO EN PERMUTERM")
 
 
 
@@ -580,16 +580,19 @@ class SAR_Project:
 
         param:  "p1", "p2": posting lists sobre las que calcular
 
-
         return: posting list con los newid incluidos de p1 y no en p2
 
         """
-
-        
-        pass
         ########################################################
         ## COMPLETAR PARA TODAS LAS VERSIONES SI ES NECESARIO ##
         ########################################################
+        '''result = []
+        i = 0
+        j = 0
+
+        while i < len(p1) & j < len(p2):
+            pass'''
+        pass
 
 
 
