@@ -353,11 +353,19 @@ class SAR_Project:
             return result
         if len(qParts) < 3:
             if len(qParts) == 2 and qParts[i] == "NOT":
-                nextP = self.get_posting(qParts[1])
+                if ':' in qParts[1]:
+                    mqParts = qParts[1].split(':')
+                    nextP = self.get_posting(mqParts[1], mqParts[0])
+                else:
+                    nextP = self.get_posting(qParts[1])
                 nextP.sort()
                 return self.reverse_posting(nextP)
             elif len(qParts) <= 2  and qParts[i] != "NOT":
-                nextP = self.get_posting(qParts[i])
+                if ':' in qParts[i]:
+                    mqParts = qParts[i].split(':')
+                    nextP = self.get_posting(mqParts[1], mqParts[0])
+                else:
+                    nextP = self.get_posting(qParts[i])
                 nextP.sort()
                 return nextP
             else:
@@ -365,32 +373,52 @@ class SAR_Project:
         else:
             while i < len(qParts) - 1:
                 if qParts[i] == "NOT":
-                    nextP = self.get_posting(qParts[i + 1])
+                    if ':' in qParts[i + 1]:
+                        mqParts = qParts[i + 1].split(':')
+                        nextP = self.get_posting(mqParts[1], mqParts[0])
+                    else:
+                        nextP = self.get_posting(qParts[i + 1])
                     nextP.sort()
                     result = self.reverse_posting(nextP)
                     i = i + 1
                 else:
                     if qParts[i] == "AND":
                         if qParts[i + 1] == "NOT":
-                            nextP = self.get_posting(qParts[i + 2])
+                            if ':' in qParts[i + 2]:
+                                mqParts = qParts[i + 2].split(':')
+                                nextP = self.get_posting(mqParts[1], mqParts[0])
+                            else:
+                                nextP = self.get_posting(qParts[i + 2])
                             nextP.sort()
                             nextP = self.reverse_posting(nextP)
                             result = self.and_posting(result, nextP)
                             i = i + 2
                         else:
-                            nextP = self.get_posting(qParts[i + 1])
+                            if ':' in qParts[i + 1]:
+                                mqParts = qParts[i + 1].split(':')
+                                nextP = self.get_posting(mqParts[1], mqParts[0])
+                            else:
+                                nextP = self.get_posting(qParts[i + 1])
                             nextP.sort()
                             result = self.and_posting(result, nextP)
                             i = i + 1
                     elif qParts[i] == "OR":
                         if qParts[i + 1] == "NOT":
-                            nextP = self.get_posting(qParts[i + 2])
+                            if ':' in qParts[i + 2]:
+                                mqParts = qParts[i + 2].split(':')
+                                nextP = self.get_posting(mqParts[1], mqParts[0])
+                            else:
+                                nextP = self.get_posting(qParts[i + 2])
                             nextP.sort()
                             nextP = self.reverse_posting(nextP)
                             result = self.or_posting(result, nextP)
                             i = i + 2
                         else:
-                            nextP = self.get_posting(qParts[i + 1])
+                            if ':' in qParts[i + 1]:
+                                mqParts = qParts[i + 1].split(':')
+                                nextP = self.get_posting(mqParts[1], mqParts[0])
+                            else:
+                                nextP = self.get_posting(qParts[i + 1])
                             nextP.sort()
                             result = self.or_posting(result, nextP)
                             i = i + 1
