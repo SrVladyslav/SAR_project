@@ -36,7 +36,13 @@ class SAR_Project:
         Puedes añadir más variables si las necesitas 
 
         """
-        self.index = {} # hash para el indice invertido de terminos --> clave: termino, valor: posting list.
+        self.index = {
+                'title': {},
+                'date': {},
+                'keywords': {},
+                'summary': {},
+                'article': {}
+        } # hash para el indice invertido de terminos --> clave: termino, valor: posting list.
                         # Si se hace la implementacion multifield, se pude hacer un segundo nivel de hashing de tal forma que:
                         # self.index['title'] seria el indice invertido del campo 'title'.
         self.sindex = {} # hash para el indice invertido de stems --> clave: stem, valor: lista con los terminos que tienen ese stem
@@ -67,6 +73,7 @@ class SAR_Project:
 
         # Days counter
         self.num_days = {}
+
 
         self.searched_terms = [] # Terminos buscados en la query
 
@@ -161,7 +168,7 @@ class SAR_Project:
         ##########################################
         ## COMPLETAR PARA FUNCIONALIDADES EXTRA ##
         ##########################################
-        print("MULTIFIELD", self.multifield, " | PERMUTeRM: ", self.permuterm)
+        print("MULTIFIELD", self.multifield, " | PERMUTERM: ", self.permuterm)
         
 
     def index_file(self, filename):
@@ -197,16 +204,19 @@ class SAR_Project:
         #################
         self.docs[self.docid] = filename
         for new in jlist:
-            nTokens = self.tokenize(new["article"])
-            nt = 0
-            for token in nTokens:
-                if not self.index.get(token, 0):
-                    self.index[token] = []
-                if (self.docid, self.newid) not in self.index[token]:
-                    self.index[token].append((self.docid, self.newid))
-                nt = nt + 1     
+            for field in self.fields:
+                #print(field[0])
+                nTokens = self.tokenize(new[field[0]]) #if self.fields['article'] else [] #new["article"])
+                nt = 0
+                for token in nTokens:
+                    if not self.index[field[0]].get(token, 0):
+                        self.index[field[0]][token] = []
+                    if (self.docid, self.newid) not in self.index[field[0]][token]:
+                        self.index[field[0]][token].append((self.docid, self.newid))
+                    nt = nt + 1     
             self.news[self.newid] = (self.docid, new["date"], new["title"], new["keywords"], nt)
             self.newid += 1
+            # COunters for TOKENS
             self.num_days[new['date']] = True # Days counter
         self.docid += 1
 
@@ -291,7 +301,15 @@ class SAR_Project:
         print("Number of indexed news: " + str(len(self.news)))
         print("-" * 40)
         print("TOKENS:")
-        print("\tof tokens in \'article\': " + str(len(self.index)))
+        if self.multifield:
+            print("\t# of tokens in \'title\': " + str(len(self.index['title'])))
+            print("\t# of tokens in \'date\': " + str(len(self.num_days)))
+            print("\t# of tokens in \'keywords\': " + str(len(self.index['keywords'])))
+            print("\t# of tokens in \'article\': " + str(len(self.index['article'])))
+            print("\t# of tokens in \'summary\': " + str(len(self.index['summary'])))
+        
+        else:
+            print("\t# of tokens in \'article\': " + str(len(self.index['article'])))
         print("Positional queries are NOT alowed.")
         print("=" * 40)
 
@@ -412,8 +430,9 @@ class SAR_Project:
 
         # NO me lo toqueis, es mio
         #return self.index[term]
+
         self.searched_terms.append(term)
-        return self.index.get(term, [])
+        return self.index[field].get(term, [])
 
 
 
@@ -485,7 +504,7 @@ class SAR_Project:
         for permuterms in self.ptindex:
             for t in permuterms:
                 if t.startswith(query[:-1]):
-                    return self.index[t]
+                    return self.index[field][t]
 
         print("Permuterm no encontrado...")
         return []
