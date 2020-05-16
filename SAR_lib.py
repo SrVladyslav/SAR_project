@@ -335,7 +335,8 @@ class SAR_Project:
             return result
         if len(qParts) < 3:
             if len(qParts) == 2 and qParts[i] == "NOT":
-                nextP = self.get_posting(qParts[2]).sort()
+                nextP = self.get_posting(qParts[1])
+                nextP.sort()
                 return self.reverse_posting(nextP)
             elif len(qParts) <= 2  and qParts[i] != "NOT":
                 nextP = self.get_posting(qParts[i])
@@ -499,7 +500,8 @@ class SAR_Project:
         ########################################
 
         allnews = []
-        newids = self.news.keys().sort()
+        newids = list(self.news.keys())
+        newids.sort()
         for new in newids:
             allnews.append((self.news[new][0], new))
         result = []
@@ -724,15 +726,17 @@ class SAR_Project:
             
             tokens = self.tokenize(article)
             for term in terms:
+                pos = -1
                 for i,token in enumerate(tokens):
                     if token == term:
                         pos = i
                         break
                 snip = "... "
-                for j in range(max((pos - int(size/2) + 1), 0), min(pos + int(size/2), len(tokens) - 1)):
-                    snip = snip + tokens[j] + " "
-                snip = snip + "..."
-                print(snip)
+                if pos >= 0:
+                    for j in range(max((pos - int(size/2) + 1), 0), min(pos + int(size/2), len(tokens) - 1)):
+                        snip = snip + tokens[j] + " "
+                    snip = snip + "..."
+                    print(snip)
 
 
 
