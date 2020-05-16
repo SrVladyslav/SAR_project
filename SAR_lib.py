@@ -788,8 +788,8 @@ class SAR_Project:
             for term in terms:
                 field = "article"
                 if ':' in term:
-                    field = term.split(':')[1]
-                    term = term.split(':')[2]
+                    field = term.split(':')[0]
+                    term = term.split(':')[1]
                 tokens = self.tokenize(targetNew[field])
                 pos = -1
                 for i,token in enumerate(tokens):
