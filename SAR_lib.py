@@ -771,9 +771,9 @@ class SAR_Project:
         Dados un documento y una noticia, imprime por cada término proporcionado 
         el primer snippet que lo contiene.
 
-        param:  "terms": lista de terminos de los cuales queremos encontrar un snippet.
+        param:  "terms": lista de terminos de los cuales queremos encontrar un snippet. Si el termino es de la forma "field:term" se buscará el el campo "field" de la noticia. Si no, se buscará en el artículo.
                 "docid": id del documento que contiene la noticia en la que queremos buscar los snippets.
-                "newid": id de la noticia en el articulo de la cual queremos buscar los snippets.
+                "newid": id de la noticia en la cual queremos buscar los snippets.
                 "size":  longitud máxima en palabras de los snippets que se mostrarán.
 
         return: el numero de noticias recuperadas, para la opcion -T
