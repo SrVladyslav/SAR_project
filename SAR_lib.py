@@ -459,7 +459,7 @@ class SAR_Project:
         # NO me lo toqueis, es mio
         #return self.index[term]
 
-        self.searched_terms.append(term)
+        self.searched_terms.append(field + ":" + term)
         return self.index[field].get(term, [])
 
 
@@ -777,16 +777,20 @@ class SAR_Project:
         """
         path = self.docs[docid]
         myNew = self.news[newid]
-        article = ""
+        targetNew = None
         with open(path) as fh:
             jlist = json.load(fh)
             for new in jlist:
                 if (new["title"] == myNew[2]) & (new["date"] == myNew[1]):
-                    article = new["article"]
+                    targetNew = new
                     break
             
-            tokens = self.tokenize(article)
             for term in terms:
+                field = "article"
+                if ':' in term:
+                    field = term.split(':')[1]
+                    term = term.split(':')[2]
+                tokens = self.tokenize(targetNew[field])
                 pos = -1
                 for i,token in enumerate(tokens):
                     if token == term:
