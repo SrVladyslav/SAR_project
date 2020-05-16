@@ -452,7 +452,24 @@ class SAR_Project:
         ##################################################
         ## COMPLETAR PARA FUNCIONALIDAD EXTRA PERMUTERM ##
         ##################################################
-        print("HOLA PUT@S, ESA WEA ENTRO EN PERMUTERM")
+        # Firstly we need to make the permuterm because of new files could be added
+        make_permuterm()        
+
+        # Now we will search for all the words that can be associated with the given term
+        term = term.replacee("?", "*")
+        query = term + '$'
+        while query[-1] is not '*':
+            query = query[1:] + query[0]
+
+        # Searching for word, N squared O cost, but for this example is good due to 
+        # optimization is not needed
+        for permuterms in self.ptindex:
+            for t in permuterms:
+                if t.startswith(query[:-1]):
+                    return self.index[t]
+
+        print("Permuterm no encontrado...")
+        return []
 
 
 
