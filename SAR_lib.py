@@ -353,15 +353,29 @@ class SAR_Project:
                     i = i + 1
                 else:
                     if qParts[i] == "AND":
-                        nextP = self.get_posting(qParts[i + 1])
-                        nextP.sort()
-                        result = self.and_posting(result, nextP)
-                        i = i + 1
+                        if qParts[i + 1] == "NOT":
+                            nextP = self.get_posting(qParts[i + 2])
+                            nextP.sort()
+                            nextP = self.reverse_posting(nextP)
+                            result = self.and_posting(result, nextP)
+                            i = i + 2
+                        else:
+                            nextP = self.get_posting(qParts[i + 1])
+                            nextP.sort()
+                            result = self.and_posting(result, nextP)
+                            i = i + 1
                     elif qParts[i] == "OR":
-                        nextP = self.get_posting(qParts[i + 1])
-                        nextP.sort()
-                        result = self.or_posting(result, nextP)
-                        i = i + 1
+                        if qParts[i + 1] == "NOT":
+                            nextP = self.get_posting(qParts[i + 2])
+                            nextP.sort()
+                            nextP = self.reverse_posting(nextP)
+                            result = self.or_posting(result, nextP)
+                            i = i + 2
+                        else:
+                            nextP = self.get_posting(qParts[i + 1])
+                            nextP.sort()
+                            result = self.or_posting(result, nextP)
+                            i = i + 1
                     else:
                         result = self.get_posting(qParts[i])
                         result.sort()
