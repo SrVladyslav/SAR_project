@@ -334,10 +334,13 @@ class SAR_Project:
         if qParts[i] == "AND" or qParts[i] == "OR":
             return result
         if len(qParts) < 3:
-            if len(qParts) == 2 and qParts[0] == "NOT":
-                return self.reverse_posting(self.get_posting(qParts[2]).sort())
-            elif len(qParts) == 2 and qParts[0] != "NOT":
-                return self.get_posting(qParts[i]).sort()
+            if len(qParts) == 2 and qParts[i] == "NOT":
+                nextP = self.get_posting(qParts[2]).sort()
+                return self.reverse_posting(nextP)
+            elif len(qParts) <= 2  and qParts[i] != "NOT":
+                nextP = self.get_posting(qParts[i])
+                nextP.sort()
+                return nextP
             else:
                 return result
         else:
