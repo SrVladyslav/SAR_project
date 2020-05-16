@@ -423,7 +423,11 @@ class SAR_Project:
                             result = self.or_posting(result, nextP)
                             i = i + 1
                     else:
-                        result = self.get_posting(qParts[i])
+                        if ':' in qParts[i]:
+                            mqParts = qParts[i].split(':')
+                            result = self.get_posting(mqParts[1], mqParts[0])
+                        else:
+                            result = self.get_posting(qParts[i])
                         result.sort()
                 i = i + 1
             return result
