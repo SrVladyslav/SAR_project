@@ -68,6 +68,7 @@ class SAR_Project:
         # Days counter
         self.num_days = {}
 
+        self.searched_terms = [] # Terminos buscados en la query
 
     def set_showall(self, v):
         """
@@ -327,14 +328,15 @@ class SAR_Project:
         ########################################
 
         result = []
+        self.searched_terms = []
         qParts = query.split()
         i = 0
         if qParts[i] == "AND" or qParts[i] == "OR":
             return result
         if len(qParts) < 3:
-            if len(qParts) == 2 and qParts[1] == "NOT":
+            if len(qParts) == 2 and qParts[0] == "NOT":
                 return self.reverse_posting(self.get_posting(qParts[2]).sort())
-            elif len(qParts) == 2 and qParts[1] != "NOT":
+            elif len(qParts) == 2 and qParts[0] != "NOT":
                 return self.get_posting(qParts[i]).sort()
             else:
                 return result
@@ -392,6 +394,7 @@ class SAR_Project:
 
         # NO me lo toqueis, es mio
         #return self.index[term]
+        self.searched_terms.append(term)
         return self.index.get(term, [])
 
 
@@ -682,7 +685,7 @@ class SAR_Project:
                 print("Date: " + str(new[1]))
                 print("Title: " + str(new[2]))
                 print("Keywords: " + str(new[3]))
-                
+                self.print_snippets(self.searched_terms,r[0],r[1],15)
 
             nr = nr + 1
             if nr > 100 and not self.show_all:
@@ -691,6 +694,42 @@ class SAR_Project:
                 print("-" * 40)
         
         print("=" * 40)
+
+
+    def print_snippets(self, terms, docid, newid, size):
+        """
+        Dados un documento y una noticia, imprime por cada término proporcionado 
+        el primer snippet que lo contiene.
+
+        param:  "terms": lista de terminos de los cuales queremos encontrar un snippet.
+                "docid": id del documento que contiene la noticia en la que queremos buscar los snippets.
+                "newid": id de la noticia en el articulo de la cual queremos buscar los snippets.
+                "size":  longitud máxima en palabras de los snippets que se mostrarán.
+
+        return: el numero de noticias recuperadas, para la opcion -T
+
+        """
+        path = self.docs[docid]
+        myNew = self.news[newid]
+        article = ""
+        with open(path) as fh:
+            jlist = json.load(fh)
+            for new in jlist:
+                if (new["title"] == myNew[2]) & (new["date"] == myNew[1]):
+                    article = new["article"]
+                    break
+            
+            tokens = self.tokenize(article)
+            for term in terms:
+                for i,token in enumerate(tokens):
+                    if token == term:
+                        pos = i
+                        break
+                snip = "... "
+                for j in range(max((pos - int(size/2) + 1), 0), min(pos + int(size/2), len(tokens) - 1)):
+                    snip = snip + tokens[j] + " "
+                snip = snip + "..."
+                print(snip)
 
 
 
