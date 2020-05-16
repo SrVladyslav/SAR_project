@@ -160,6 +160,7 @@ class SAR_Project:
         ##########################################
         ## COMPLETAR PARA FUNCIONALIDADES EXTRA ##
         ##########################################
+        print("MULTIFIELD", self.multifield, " | PERMUTeRM: ", self.permuterm)
         
 
     def index_file(self, filename):
@@ -292,10 +293,6 @@ class SAR_Project:
         print("\tof tokens in \'article\': " + str(len(self.index)))
         print("Positional queries are NOT alowed.")
         print("=" * 40)
-
-
-
-
 
 
 
@@ -455,6 +452,7 @@ class SAR_Project:
         # Firstly we need to make the permuterm because of new files could be added
         make_permuterm()        
 
+        print("GET PERMUTERM!")
         # Now we will search for all the words that can be associated with the given term
         term = term.replacee("?", "*")
         query = term + '$'
