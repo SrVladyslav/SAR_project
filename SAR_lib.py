@@ -263,11 +263,15 @@ class SAR_Project:
 
         """
         
-        pass
         ####################################################
         ## COMPLETAR PARA FUNCIONALIDAD EXTRA DE STEMMING ##
         ####################################################
-
+        for termino in self.index['article'].keys():
+            term = self.stemmer.stem(termino)
+            if self.sindex.get(term) == None:
+                self.sindex[term] = [termino]
+            else:
+                self.sindex[term] = self.sindex[term] + [termino]
 
 
     
@@ -568,7 +572,7 @@ class SAR_Project:
         """
         
         stem = self.stemmer.stem(term)
-
+        return self.sindex.get(stem, [])
         ####################################################
         ## COMPLETAR PARA FUNCIONALIDAD EXTRA DE STEMMING ##
         ####################################################
