@@ -228,7 +228,6 @@ class SAR_Project:
                     if (self.docid, self.newid) not in self.index[field[0]][token]:
                         self.index[field[0]][token].append((self.docid, self.newid))
                     nt = nt + 1    
-
             self.news[self.newid] = (self.docid, new["date"], new["title"], new["keywords"], nt)
             self.newid += 1
             # COunters for TOKENS
@@ -403,62 +402,104 @@ class SAR_Project:
         ########################################
         ## COMPLETAR PARA TODAS LAS VERSIONES ##
         ########################################
-
         result = []
         self.searched_terms = []
         qParts = query.split()
+
         i = 0
         if qParts[i] == "AND" or qParts[i] == "OR":
             return result
         if len(qParts) < 3:
             if len(qParts) == 2 and qParts[i] == "NOT":
-                nextP = self.get_posting(qParts[1])
+                if ':' in qParts[1]:
+                    mqParts = qParts[1].split(':')
+                    nextP = self.get_posting(mqParts[1], mqParts[0])
+                else:
+                    nextP = self.get_posting(qParts[1])
+                nextP = list(nextP)
                 nextP.sort()
                 return self.reverse_posting(nextP)
             elif len(qParts) <= 2  and qParts[i] != "NOT":
-                nextP = self.get_posting(qParts[i])
+                if ':' in qParts[i]:
+                    mqParts = qParts[i].split(':')
+                    nextP = self.get_posting(mqParts[1], mqParts[0])
+                else:
+                    nextP = self.get_posting(qParts[i])
+
+                nextP = list(nextP)
                 nextP.sort()
                 return nextP
             else:
+
                 return result
         else:
             while i < len(qParts) - 1:
                 if qParts[i] == "NOT":
-                    nextP = self.get_posting(qParts[i + 1])
+                    if ':' in qParts[i + 1]:
+                        mqParts = qParts[i + 1].split(':')
+                        nextP = self.get_posting(mqParts[1], mqParts[0])
+                    else:
+                        nextP = self.get_posting(qParts[i + 1])
+                    nextP = list(nextP)
                     nextP.sort()
                     result = self.reverse_posting(nextP)
                     i = i + 1
                 else:
                     if qParts[i] == "AND":
                         if qParts[i + 1] == "NOT":
-                            nextP = self.get_posting(qParts[i + 2])
+                            if ':' in qParts[i + 2]:
+                                mqParts = qParts[i + 2].split(':')
+                                nextP = self.get_posting(mqParts[1], mqParts[0])
+                            else:
+                                nextP = self.get_posting(qParts[i + 2])
+                            nextP = list(nextP)
                             nextP.sort()
                             nextP = self.reverse_posting(nextP)
                             result = self.and_posting(result, nextP)
                             i = i + 2
                         else:
-                            nextP = self.get_posting(qParts[i + 1])
+                            if ':' in qParts[i + 1]:
+                                mqParts = qParts[i + 1].split(':')
+                                nextP = self.get_posting(mqParts[1], mqParts[0])
+                            else:
+                                nextP = self.get_posting(qParts[i + 1])
+                            nextP = list(nextP)
                             nextP.sort()
                             result = self.and_posting(result, nextP)
                             i = i + 1
                     elif qParts[i] == "OR":
                         if qParts[i + 1] == "NOT":
-                            nextP = self.get_posting(qParts[i + 2])
+                            if ':' in qParts[i + 2]:
+                                mqParts = qParts[i + 2].split(':')
+                                nextP = self.get_posting(mqParts[1], mqParts[0])
+                            else:
+                                nextP = self.get_posting(qParts[i + 2])
+                            nextP = list(nextP)
                             nextP.sort()
                             nextP = self.reverse_posting(nextP)
                             result = self.or_posting(result, nextP)
                             i = i + 2
                         else:
-                            nextP = self.get_posting(qParts[i + 1])
+                            if ':' in qParts[i + 1]:
+                                mqParts = qParts[i + 1].split(':')
+                                nextP = self.get_posting(mqParts[1], mqParts[0])
+                            else:
+                                nextP = self.get_posting(qParts[i + 1])
+                            nextP = list(nextP)
                             nextP.sort()
                             result = self.or_posting(result, nextP)
                             i = i + 1
                     else:
-                        result = self.get_posting(qParts[i])
+                        if ':' in qParts[i]:
+                            mqParts = qParts[i].split(':')
+                            result = self.get_posting(mqParts[1], mqParts[0])
+                        else:
+                            result = self.get_posting(qParts[i])
+                        result = list(result)
                         result.sort()
                 i = i + 1
-            return result
 
+            return result
 
 
  
@@ -490,7 +531,7 @@ class SAR_Project:
         # NO me lo toqueis, es mio
         #return self.index[term]
 
-        self.searched_terms.append(term)
+        self.searched_terms.append(field + ":" + term)
         return self.index[field].get(term, [])
 
 
@@ -800,9 +841,9 @@ class SAR_Project:
         Dados un documento y una noticia, imprime por cada término proporcionado 
         el primer snippet que lo contiene.
 
-        param:  "terms": lista de terminos de los cuales queremos encontrar un snippet.
+        param:  "terms": lista de terminos de los cuales queremos encontrar un snippet. Si el termino es de la forma "field:term" se buscará el el campo "field" de la noticia. Si no, se buscará en el artículo.
                 "docid": id del documento que contiene la noticia en la que queremos buscar los snippets.
-                "newid": id de la noticia en el articulo de la cual queremos buscar los snippets.
+                "newid": id de la noticia en la cual queremos buscar los snippets.
                 "size":  longitud máxima en palabras de los snippets que se mostrarán.
 
         return: el numero de noticias recuperadas, para la opcion -T
@@ -810,16 +851,20 @@ class SAR_Project:
         """
         path = self.docs[docid]
         myNew = self.news[newid]
-        article = ""
+        targetNew = None
         with open(path) as fh:
             jlist = json.load(fh)
             for new in jlist:
                 if (new["title"] == myNew[2]) & (new["date"] == myNew[1]):
-                    article = new["article"]
+                    targetNew = new
                     break
             
-            tokens = self.tokenize(article)
             for term in terms:
+                field = "article"
+                if ':' in term:
+                    field = term.split(':')[0]
+                    term = term.split(':')[1]
+                tokens = self.tokenize(targetNew[field])
                 pos = -1
                 for i,token in enumerate(tokens):
                     if token == term:
