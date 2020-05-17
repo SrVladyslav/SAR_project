@@ -46,7 +46,13 @@ class SAR_Project:
                         # Si se hace la implementacion multifield, se pude hacer un segundo nivel de hashing de tal forma que:
                         # self.index['title'] seria el indice invertido del campo 'title'.
         self.sindex = {} # hash para el indice invertido de stems --> clave: stem, valor: lista con los terminos que tienen ese stem
-        self.ptindex = {} # hash para el indice permuterm.
+        self.ptindex = {
+                'title': {},
+                'date': {},
+                'keywords': {},
+                'summary': {},
+                'article': {}
+        } # hash para el indice permuterm.
         self.docs = {} # diccionario de terminos --> clave: entero(docid),  valor: ruta del fichero.
         self.weight = {} # hash de terminos para el pesado, ranking de resultados. puede no utilizarse
         self.news = {} # hash de noticias --> clave entero (newid), valor: la info necesaria para diferencia la noticia dentro de su fichero
@@ -73,9 +79,9 @@ class SAR_Project:
 
         # Days counter
         self.num_days = {}
-
-
-        self.searched_terms = [] # Terminos buscados en la query
+        self.term_frequency = {}
+        # Searched terms in the query
+        self.searched_terms = []
 
     def set_showall(self, v):
         """
@@ -168,7 +174,6 @@ class SAR_Project:
         ##########################################
         ## COMPLETAR PARA FUNCIONALIDADES EXTRA ##
         ##########################################
-        print("MULTIFIELD", self.multifield, " | PERMUTERM: ", self.permuterm)
         
 
     def index_file(self, filename):
@@ -206,17 +211,23 @@ class SAR_Project:
         for new in jlist:
             for field in self.fields:
                 #print(field[0])
-                nTokens = self.tokenize(new[field[0]]) #if self.fields['article'] else [] #new["article"])
-                nt = 0
-                for token in nTokens:
+                if field[1]:
+                    nTokens = self.tokenize(new[field[0]]) #if self.fields['article'] else [] #new["article"])
+                    nt = 0
+                    for token in nTokens:
+                        if not self.index[field[0]].get(token, 0):
+                            self.index[field[0]][token] = []
+                        if (self.docid, self.newid) not in self.index[field[0]][token]:
+                            self.index[field[0]][token].append((self.docid, self.newid))
+                        nt = nt + 1     
+                else:
+                    nt = 0
+                    token = new[field[0]]
                     if not self.index[field[0]].get(token, 0):
-                        self.index[field[0]][token] = {}
-                    if  not self.index[field[0]][token].get((self.docid, self.newid),0):
-                        self.index[field[0]][token][(self.docid, self.newid)] = [nt]
-                    if (self.docid, self.newid) in self.index[field[0]][token]:
-                        self.index[field[0]][token][(self.docid, self.newid)].append(nt)
-                       
-                    nt = nt + 1     
+                            self.index[field[0]][token] = []
+                    if (self.docid, self.newid) not in self.index[field[0]][token]:
+                        self.index[field[0]][token].append((self.docid, self.newid))
+                    nt = nt + 1    
             self.news[self.newid] = (self.docid, new["date"], new["title"], new["keywords"], nt)
             self.newid += 1
             # COunters for TOKENS
@@ -265,23 +276,42 @@ class SAR_Project:
         NECESARIO PARA LA AMPLIACION DE PERMUTERM
 
         Crea el indice permuterm (self.ptindex) para los terminos de todos los indices.
+        
+        > self.ptindex[field][term]
 
         """
         ####################################################
         ## COMPLETAR PARA FUNCIONALIDAD EXTRA DE STEMMING ##
         ####################################################
-        print("[ JOINING PERMUTERM ]")
-        for termino in self.index.keys():
-            termino += '$'
-            permutations = []
+        
+        if self.multifield:
+            # Searching for the different fields
+            f = []
+            for i in self.fields:
+                f.append(i[0])
 
-            for i in range(len(termino)-1):
-                termino = termino[1:] + termino[0]
-                permutations.append(termino)
+            for field in range(len(f)):
+                for termino in self.index[f[field]].keys():
+                    t = termino
+                    termino += '$'
+                    permutations = []
 
-            self.ptindex[termino] = permutations
+                    for i in range(len(termino)):
+                        termino = termino[1:] + termino[0]
+                        permutations.append(termino)
+                    self.ptindex[f[field]][t] = len(permutations) if self.ptindex[f[field]].get(t) == None else self.ptindex[f[field]][t] + len(permutations)    
+        else:
+            for termino in self.index['article'].keys():
+                termino += '$'
+                permutations = []
 
-        print(self.ptindex)
+                for i in range(len(termino)-1):
+                    termino = termino[1:] + termino[0]
+                    permutations.append(termino)
+
+                self.ptindex['article'][termino] = len(permutations) +1
+
+        #print(self.ptindex)
 
 
 
@@ -304,15 +334,40 @@ class SAR_Project:
         print("Number of indexed news: " + str(len(self.news)))
         print("-" * 40)
         print("TOKENS:")
+
+        # ------------------------------- If multified option is active ----------------------
         if self.multifield:
             print("\t# of tokens in \'title\': " + str(len(self.index['title'])))
             print("\t# of tokens in \'date\': " + str(len(self.num_days)))
             print("\t# of tokens in \'keywords\': " + str(len(self.index['keywords'])))
             print("\t# of tokens in \'article\': " + str(len(self.index['article'])))
             print("\t# of tokens in \'summary\': " + str(len(self.index['summary'])))
-        
+            print("-" * 40)
+
+        # ------------------------------- If permuterm option is active ----------------------
+        if self.permuterm:
+            print("PERMUTERMS:")
+            # Making permuterms 
+            self.make_permuterm()
+
+            # Searching for the different fields
+            f = []
+            for i in self.fields:
+                f.append(i[0])
+
+            for field in f:
+                i = 0
+                for term in self.ptindex[field].keys():
+                    i += self.ptindex[field][term]
+
+                print("\t# of tokens in \'",field,"\': " + str(i))
+            print("-" * 40)
+
+        if self.stemming:
+            pass
         else:
-            print("\t# of tokens in \'article\': " + str(len(self.index['article'])))
+            pass
+            #print("\t# of tokens in \'article\': " + str(len(self.index['article'])))
         print("Positional queries are NOT alowed.")
         print("=" * 40)
 
@@ -535,13 +590,13 @@ class SAR_Project:
         ## COMPLETAR PARA FUNCIONALIDAD EXTRA PERMUTERM ##
         ##################################################
         # Firstly we need to make the permuterm because of new files could be added
-        make_permuterm()        
+        self.make_permuterm()        
 
         print("GET PERMUTERM!")
         # Now we will search for all the words that can be associated with the given term
-        term = term.replacee("?", "*")
+        term = term.replace("?", "*")
         query = term + '$'
-        while query[-1] is not '*':
+        while query[-1] is not "*":
             query = query[1:] + query[0]
 
         # Searching for word, N squared O cost, but for this example is good due to 
@@ -549,7 +604,9 @@ class SAR_Project:
         for permuterms in self.ptindex:
             for t in permuterms:
                 if t.startswith(query[:-1]):
+                    print("Permuterm encontrado")
                     return self.index[field][t]
+                    #self.term_frequency[field][t]
 
         print("Permuterm no encontrado...")
         return []
