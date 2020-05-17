@@ -210,9 +210,12 @@ class SAR_Project:
                 nt = 0
                 for token in nTokens:
                     if not self.index[field[0]].get(token, 0):
-                        self.index[field[0]][token] = []
-                    if (self.docid, self.newid) not in self.index[field[0]][token]:
-                        self.index[field[0]][token].append((self.docid, self.newid))
+                        self.index[field[0]][token] = {}
+                    if  not self.index[field[0]][token].get((self.docid, self.newid),0):
+                        self.index[field[0]][token][(self.docid, self.newid)] = [nt]
+                    if (self.docid, self.newid) in self.index[field[0]][token]:
+                        self.index[field[0]][token][(self.docid, self.newid)].append(nt)
+                       
                     nt = nt + 1     
             self.news[self.newid] = (self.docid, new["date"], new["title"], new["keywords"], nt)
             self.newid += 1
@@ -344,10 +347,10 @@ class SAR_Project:
         ########################################
         ## COMPLETAR PARA TODAS LAS VERSIONES ##
         ########################################
-
         result = []
         self.searched_terms = []
         qParts = query.split()
+
         i = 0
         if qParts[i] == "AND" or qParts[i] == "OR":
             return result
@@ -358,6 +361,7 @@ class SAR_Project:
                     nextP = self.get_posting(mqParts[1], mqParts[0])
                 else:
                     nextP = self.get_posting(qParts[1])
+                nextP = list(nextP)
                 nextP.sort()
                 return self.reverse_posting(nextP)
             elif len(qParts) <= 2  and qParts[i] != "NOT":
@@ -366,9 +370,12 @@ class SAR_Project:
                     nextP = self.get_posting(mqParts[1], mqParts[0])
                 else:
                     nextP = self.get_posting(qParts[i])
+
+                nextP = list(nextP)
                 nextP.sort()
                 return nextP
             else:
+
                 return result
         else:
             while i < len(qParts) - 1:
@@ -378,6 +385,7 @@ class SAR_Project:
                         nextP = self.get_posting(mqParts[1], mqParts[0])
                     else:
                         nextP = self.get_posting(qParts[i + 1])
+                    nextP = list(nextP)
                     nextP.sort()
                     result = self.reverse_posting(nextP)
                     i = i + 1
@@ -389,6 +397,7 @@ class SAR_Project:
                                 nextP = self.get_posting(mqParts[1], mqParts[0])
                             else:
                                 nextP = self.get_posting(qParts[i + 2])
+                            nextP = list(nextP)
                             nextP.sort()
                             nextP = self.reverse_posting(nextP)
                             result = self.and_posting(result, nextP)
@@ -399,6 +408,7 @@ class SAR_Project:
                                 nextP = self.get_posting(mqParts[1], mqParts[0])
                             else:
                                 nextP = self.get_posting(qParts[i + 1])
+                            nextP = list(nextP)
                             nextP.sort()
                             result = self.and_posting(result, nextP)
                             i = i + 1
@@ -409,6 +419,7 @@ class SAR_Project:
                                 nextP = self.get_posting(mqParts[1], mqParts[0])
                             else:
                                 nextP = self.get_posting(qParts[i + 2])
+                            nextP = list(nextP)
                             nextP.sort()
                             nextP = self.reverse_posting(nextP)
                             result = self.or_posting(result, nextP)
@@ -419,6 +430,7 @@ class SAR_Project:
                                 nextP = self.get_posting(mqParts[1], mqParts[0])
                             else:
                                 nextP = self.get_posting(qParts[i + 1])
+                            nextP = list(nextP)
                             nextP.sort()
                             result = self.or_posting(result, nextP)
                             i = i + 1
@@ -428,10 +440,11 @@ class SAR_Project:
                             result = self.get_posting(mqParts[1], mqParts[0])
                         else:
                             result = self.get_posting(qParts[i])
+                        result = list(result)
                         result.sort()
                 i = i + 1
-            return result
 
+            return result
 
 
  
