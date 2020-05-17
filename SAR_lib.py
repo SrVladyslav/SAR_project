@@ -274,7 +274,6 @@ class SAR_Project:
                 self.sindex[term] = self.sindex[term] + [termino]
 
 
-
     
     def make_permuterm(self):
         """
@@ -573,8 +572,7 @@ class SAR_Project:
         """
         
         stem = self.stemmer.stem(term)
-        return self.sindex.get(stem)
-
+        return self.sindex.get(stem, [])
         ####################################################
         ## COMPLETAR PARA FUNCIONALIDAD EXTRA DE STEMMING ##
         ####################################################
