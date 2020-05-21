@@ -208,31 +208,53 @@ class SAR_Project:
         ### COMPLETAR ###
         #################
         self.docs[self.docid] = filename
-        for new in jlist:
-            for field in self.fields:
-                #print(field[0])
-                if field[1]:
+        if self.positional:
+            for new in jlist:
+                for field in self.fields:
+                    #print(field[0])
                     nTokens = self.tokenize(new[field[0]]) #if self.fields['article'] else [] #new["article"])
                     nt = 0
                     for token in nTokens:
                         if not self.index[field[0]].get(token, 0):
-                            self.index[field[0]][token] = []
-                        if (self.docid, self.newid) not in self.index[field[0]][token]:
-                            self.index[field[0]][token].append((self.docid, self.newid))
+                            self.index[field[0]][token] = {}
+                        if  not self.index[field[0]][token].get((self.docid, self.newid),0):
+                            self.index[field[0]][token][(self.docid, self.newid)] = []
+                        if (self.docid, self.newid) in self.index[field[0]][token]:
+                            self.index[field[0]][token][(self.docid, self.newid)].append(nt)
+                           
                         nt = nt + 1     
-                else:
-                    nt = 0
-                    token = new[field[0]]
-                    if not self.index[field[0]].get(token, 0):
-                            self.index[field[0]][token] = []
-                    if (self.docid, self.newid) not in self.index[field[0]][token]:
-                        self.index[field[0]][token].append((self.docid, self.newid))
-                    nt = nt + 1    
-            self.news[self.newid] = (self.docid, new["date"], new["title"], new["keywords"], nt)
-            self.newid += 1
-            # COunters for TOKENS
-            self.num_days[new['date']] = True # Days counter
-        self.docid += 1
+                self.news[self.newid] = (self.docid, new["date"], new["title"], new["keywords"], nt)
+                self.newid += 1
+                # COunters for TOKENS
+                self.num_days[new['date']] = True # Days counter
+
+        else:
+            for new in jlist:
+                    for field in self.fields:
+                        #print(field[0])
+                        if field[1]:
+                            nTokens = self.tokenize(new[field[0]]) #if self.fields['article'] else [] #new["article"])
+                            nt = 0
+                            for token in nTokens:
+                                if not self.index[field[0]].get(token, 0):
+                                    self.index[field[0]][token] = {}
+                                if (self.docid, self.newid) not in self.index[field[0]][token]:
+                                    self.index[field[0]][token][(self.docid, self.newid)] = []
+                                nt = nt + 1     
+                        else:
+                            nt = 0
+                            token = new[field[0]]
+
+                            if not self.index[field[0]].get(token, 0):
+                                    self.index[field[0]][token] = {}
+                            if (self.docid, self.newid) not in self.index[field[0]][token]:
+                                self.index[field[0]][token][(self.docid, self.newid)] = []
+                            nt = nt + 1    
+                    self.news[self.newid] = (self.docid, new["date"], new["title"], new["keywords"], nt)
+                    self.newid += 1
+                    # COunters for TOKENS
+                    self.num_days[new['date']] = True # Days counter
+        self.docid = self.docid + 1
 
 
 
@@ -327,7 +349,7 @@ class SAR_Project:
         Muestra estadisticas de los indices
         
         """
-        pass
+        
         ########################################
         ## COMPLETAR PARA TODAS LAS VERSIONES ##
         ########################################
@@ -345,7 +367,7 @@ class SAR_Project:
             print("\t# of tokens in \'date\': " + str(len(self.num_days)))
             print("\t# of tokens in \'keywords\': " + str(len(self.index['keywords'])))
             print("\t# of tokens in \'article\': " + str(len(self.index['article'])))
-            print("\t# of tokens in \'summary\': " + str(len(self.index['summary'])))
+            print("\t# of tokens in \'summary\': " + str(len(self.index['summar0y'])))
             print("-" * 40)
 
         # ------------------------------- If permuterm option is active ----------------------
@@ -372,7 +394,10 @@ class SAR_Project:
         else:
             pass
             #print("\t# of tokens in \'article\': " + str(len(self.index['article'])))
-        print("Positional queries are NOT alowed.")
+        if self.positional:
+            print("Positional queries are alowed.")
+        else:
+            print("Positional queries are NOT alowed.")
         print("=" * 40)
 
 
@@ -408,6 +433,9 @@ class SAR_Project:
         ########################################
         result = []
         self.searched_terms = []
+        if '\"' in query:
+            query = query.replace('\"' ,' \" ' )
+            #P.eje pasar de "h" a " h "
         qParts = query.split()
 
         i = 0
@@ -438,71 +466,141 @@ class SAR_Project:
                 return result
         else:
             while i < len(qParts) - 1:
-                if qParts[i] == "NOT":
-                    if ':' in qParts[i + 1]:
-                        mqParts = qParts[i + 1].split(':')
-                        nextP = self.get_posting(mqParts[1], mqParts[0])
-                    else:
-                        nextP = self.get_posting(qParts[i + 1])
-                    nextP = list(nextP)
-                    nextP.sort()
-                    result = self.reverse_posting(nextP)
-                    i = i + 1
-                else:
-                    if qParts[i] == "AND":
-                        if qParts[i + 1] == "NOT":
-                            if ':' in qParts[i + 2]:
-                                mqParts = qParts[i + 2].split(':')
-                                nextP = self.get_posting(mqParts[1], mqParts[0])
-                            else:
-                                nextP = self.get_posting(qParts[i + 2])
-                            nextP = list(nextP)
-                            nextP.sort()
-                            nextP = self.reverse_posting(nextP)
-                            result = self.and_posting(result, nextP)
-                            i = i + 2
-                        else:
-                            if ':' in qParts[i + 1]:
-                                mqParts = qParts[i + 1].split(':')
-                                nextP = self.get_posting(mqParts[1], mqParts[0])
-                            else:
-                                nextP = self.get_posting(qParts[i + 1])
-                            nextP = list(nextP)
-                            nextP.sort()
-                            result = self.and_posting(result, nextP)
-                            i = i + 1
-                    elif qParts[i] == "OR":
-                        if qParts[i + 1] == "NOT":
-                            if ':' in qParts[i + 2]:
-                                mqParts = qParts[i + 2].split(':')
-                                nextP = self.get_posting(mqParts[1], mqParts[0])
-                            else:
-                                nextP = self.get_posting(qParts[i + 2])
-                            nextP = list(nextP)
-                            nextP.sort()
-                            nextP = self.reverse_posting(nextP)
-                            result = self.or_posting(result, nextP)
-                            i = i + 2
-                        else:
-                            if ':' in qParts[i + 1]:
-                                mqParts = qParts[i + 1].split(':')
-                                nextP = self.get_posting(mqParts[1], mqParts[0])
-                            else:
-                                nextP = self.get_posting(qParts[i + 1])
-                            nextP = list(nextP)
-                            nextP.sort()
-                            result = self.or_posting(result, nextP)
-                            i = i + 1
-                    else:
-                        if ':' in qParts[i]:
-                            mqParts = qParts[i].split(':')
-                            result = self.get_posting(mqParts[1], mqParts[0])
-                        else:
-                            result = self.get_posting(qParts[i])
-                        result = list(result)
-                        result.sort()
-                i = i + 1
 
+                if qParts[i] == "\"":
+                    newQP = qParts
+                    newQP = newQP[1:]
+                    pos = newQP.index("\"") + 1
+                    newQP = qParts[1:pos]
+                    result = self.get_positionals(newQP)
+                    i = i + pos + 1
+                else:
+                    if qParts[i] == "NOT":
+                        if qParts[i + 1] == "\"":
+                            newQP = qParts
+                            pos = newQP.index("\"") + 1
+                            newQP = qParts[i+2:pos+i+2]
+                            nextP = self.get_positionals(newQP)
+                            nextP = list(nextP)
+                            nextP.sort()
+                            result = self.and_posting(result, nextP)
+                            i = i + pos + 1
+                        if ':' in qParts[i + 1]:
+                            mqParts = qParts[i + 1].split(':')
+                            nextP = self.get_posting(mqParts[1], mqParts[0])
+                        else:
+                            nextP = self.get_posting(qParts[i + 1])
+                        nextP = list(nextP)
+                        nextP.sort()
+                        result = self.reverse_posting(nextP)
+                        i = i + 1
+                    else:
+                        if qParts[i] == "AND":                               
+                            if qParts[i + 1] == "\"":
+
+                                    newQP = qParts
+
+                                    pos = newQP.index("\"") + 1
+
+                                    newQP = qParts[i+2:pos+i+2]
+
+                                    nextP = self.get_positionals(newQP)
+                                    nextP = list(nextP)
+
+                                    nextP.sort()
+
+                                    result = self.and_posting(result, nextP)
+
+                                    i = i + pos + 1
+                            elif qParts[i + 1] == "NOT":
+                                if qParts[i + 2] == "\"":
+                                    newQP = qParts
+                                    pos = newQP.index("\"") + 1
+                                    newQP = qParts[i+3:pos+i+3]
+                                    nextP = self.get_positionals(newQP)
+                                    nextP = list(nextP)
+                                    nextP.sort()
+                                    result = self.and_posting(result, nextP)
+                                    i = i + pos + 2
+                                elif ':' in qParts[i + 2]:
+                                    mqParts = qParts[i + 2].split(':')
+                                    nextP = self.get_posting(mqParts[1], mqParts[0])
+                                    if qParts[i + 1] == "\"":
+                                        newQP = qParts
+                                        newQP = newQP[1:]
+                                        pos = newQP.index("\"") + 1
+                                        newQP = qParts[1:pos]
+                                        result = self.get_positionals(newQP)
+                                        i = i + pos
+                                else:
+                                    nextP = self.get_posting(qParts[i + 2])
+                                nextP = list(nextP)
+                                nextP.sort()
+                                nextP = self.reverse_posting(nextP)
+                                result = self.and_posting(result, nextP)
+                                i = i + 2
+                            else:
+
+                                if ':' in qParts[i + 1]:
+                                    mqParts = qParts[i + 1].split(':')
+                                    nextP = self.get_posting(mqParts[1], mqParts[0])
+
+                                else:
+                                    nextP = self.get_posting(qParts[i + 1])
+                                nextP = list(nextP)
+                                nextP.sort()
+                                result = self.and_posting(result, nextP)
+                                i = i + 1
+                        elif qParts[i] == "OR":
+                            if qParts[i + 1] == "\"":
+                                    newQP = qParts
+                                    pos = newQP.index("\"") + 1
+                                    newQP = qParts[i+2:pos+i+2]
+                                    nextP = self.get_positionals(newQP)
+                                    nextP = list(nextP)
+                                    nextP.sort()
+                                    result = self.and_posting(result, nextP)
+                                    i = i + pos + 1
+                            elif qParts[i + 1] == "NOT":
+                                if qParts[i + 2] == "\"":
+                                    newQP = qParts
+                                    pos = newQP.index("\"") + 2
+                                    newQP = qParts[i+3:pos+i+3]
+                                    nextP = self.get_positionals(newQP)
+                                    nextP = list(nextP)
+                                    nextP.sort()
+                                    result = self.and_posting(result, nextP)
+                                    i = i + pos + 2
+                                elif ':' in qParts[i + 2]:
+                                    mqParts = qParts[i + 2].split(':')
+                                    nextP = self.get_posting(mqParts[1], mqParts[0])
+                                else:
+                                    nextP = self.get_posting(qParts[i + 2])
+                                nextP = list(nextP)
+                                nextP.sort()
+                                nextP = self.reverse_posting(nextP)
+                                result = self.or_posting(result, nextP)
+                                i = i + 2
+                            else:
+                                if ':' in qParts[i + 1]:
+                                    mqParts = qParts[i + 1].split(':')
+                                    nextP = self.get_posting(mqParts[1], mqParts[0])
+                                else:
+                                    nextP = self.get_posting(qParts[i + 1])
+                                nextP = list(nextP)
+                                nextP.sort()
+                                result = self.or_posting(result, nextP)
+                                i = i + 1
+                        else:
+                            if ':' in qParts[i]:
+                                mqParts = qParts[i].split(':')
+                                result = self.get_posting(mqParts[1], mqParts[0])
+                            else:
+                                result = self.get_posting(qParts[i])
+                            result = list(result)
+                            result.sort()
+                    i = i + 1
+            
             return result
 
 
@@ -552,10 +650,49 @@ class SAR_Project:
         return: posting list
 
         """
-        pass
+        
         ########################################################
         ## COMPLETAR PARA FUNCIONALIDAD EXTRA DE POSICIONALES ##
         ########################################################
+        result = []
+
+        diccionario_result = {}
+        inicial = self.get_posting(terms[0])
+        if len(terms) == 1:
+            return inicial
+        i = 1
+        while i < len(terms):
+            diccionario_result = {}
+            lista_inicial = list(inicial)
+            desp = self.get_posting(terms[i])
+            lista_desp = list(desp)
+            and_pos_list = self.and_posting(lista_inicial,lista_desp)
+            for x in and_pos_list:
+                lista_posicion_inicial = inicial[x]
+                lista_posicion_desp = desp[x]
+                j = 0
+                k = 0
+                while (j < len(lista_posicion_inicial)) & (k < len(lista_posicion_desp)):
+
+                    if lista_posicion_inicial[j] == lista_posicion_desp[k] - 1:
+                        if  not diccionario_result.get(x,0):
+                            diccionario_result[x] = []
+                        if x in diccionario_result:
+                            ##Almacenamos en diicionario la posición del último elemento
+                            diccionario_result[x].append(lista_posicion_desp[k])
+                            
+
+                        j = j + 1
+                        k = k + 1
+                    elif lista_posicion_inicial[j] < lista_posicion_desp[k] - 1:
+                        j = j + 1
+                    else:
+                        k = k + 1
+            inicial = diccionario_result
+            i=i+1
+
+        
+        return list(diccionario_result)
 
 
     def get_stemming(self, term, field='article'):
