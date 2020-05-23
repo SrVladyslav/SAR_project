@@ -2,6 +2,7 @@ import json
 from nltk.stem.snowball import SnowballStemmer
 import os
 import re
+import math
 
 
 class SAR_Project:
@@ -45,7 +46,13 @@ class SAR_Project:
         } # hash para el indice invertido de terminos --> clave: termino, valor: posting list.
                         # Si se hace la implementacion multifield, se pude hacer un segundo nivel de hashing de tal forma que:
                         # self.index['title'] seria el indice invertido del campo 'title'.
-        self.sindex = {} # hash para el indice invertido de stems --> clave: stem, valor: lista con los terminos que tienen ese stem
+        self.sindex = {
+                'title': {},
+                'date': {},
+                'keywords': {},
+                'summary': {},
+                'article': {}
+        } # hash para el indice invertido de stems --> clave: stem, valor: lista con los terminos que tienen ese stem
         self.ptindex = {
                 'title': {},
                 'date': {},
@@ -192,7 +199,7 @@ class SAR_Project:
 
         """
 
-        with open(filename) as fh:
+        with open(filename, encoding='utf-8') as fh:
             jlist = json.load(fh)
 
         #
@@ -212,7 +219,9 @@ class SAR_Project:
             for new in jlist:
                 for field in self.fields:
                     #print(field[0])
+                    #if field[1]:
                     nTokens = self.tokenize(new[field[0]]) #if self.fields['article'] else [] #new["article"])
+
                     nt = 0
                     for token in nTokens:
                         if not self.index[field[0]].get(token, 0):
@@ -240,7 +249,11 @@ class SAR_Project:
                                     self.index[field[0]][token] = {}
                                 if (self.docid, self.newid) not in self.index[field[0]][token]:
                                     self.index[field[0]][token][(self.docid, self.newid)] = []
-                                nt = nt + 1     
+                                nt = nt + 1    
+                                # frecuencia de las palabras
+                                if self.weight.get(token) == None:
+                                  self.weight[token] = {self.newid: 0}
+                                self.weight[token][self.newid] = 1 if self.weight[token].get(self.newid) == None else self.weight[token][self.newid] + 1
                         else:
                             nt = 0
                             token = new[field[0]]
@@ -250,6 +263,7 @@ class SAR_Project:
                             if (self.docid, self.newid) not in self.index[field[0]][token]:
                                 self.index[field[0]][token][(self.docid, self.newid)] = []
                             nt = nt + 1    
+                    
                     self.news[self.newid] = (self.docid, new["date"], new["title"], new["keywords"], nt)
                     self.newid += 1
                     # COunters for TOKENS
@@ -288,12 +302,18 @@ class SAR_Project:
         ####################################################
         ## COMPLETAR PARA FUNCIONALIDAD EXTRA DE STEMMING ##
         ####################################################
-        for termino in self.index['article'].keys():
-            term = self.stemmer.stem(termino)
-            if self.sindex.get(term) == None:
-                self.sindex[term] = [termino]
-            else:
-                self.sindex[term] = self.sindex[term] + [termino]
+        # Searching for the different fields
+        f = []
+        for i in self.fields:
+            f.append(i[0])
+
+        for field in f:
+            for termino in self.index[field].keys():
+                term = self.stemmer.stem(termino)
+                if self.sindex[field].get(term) == None:
+                    self.sindex[field][term] = [termino]
+                else:
+                    self.sindex[field][term] = self.sindex[field][term] + [termino]
 
 
     
@@ -331,13 +351,11 @@ class SAR_Project:
                 termino += '$'
                 permutations = []
 
-                for i in range(len(termino)-1):
+                for i in range(len(termino)):
                     termino = termino[1:] + termino[0]
                     permutations.append(termino)
 
-                self.ptindex['article'][termino] = len(permutations) +1
-
-        #print(self.ptindex)
+                self.ptindex['article'][termino] = len(permutations) 
 
 
 
@@ -349,7 +367,6 @@ class SAR_Project:
         Muestra estadisticas de los indices
         
         """
-        
         ########################################
         ## COMPLETAR PARA TODAS LAS VERSIONES ##
         ########################################
@@ -361,6 +378,10 @@ class SAR_Project:
         print("-" * 40)
         print("TOKENS:")
 
+        # Searching for the different fields
+        f = []
+        for i in self.fields:
+            f.append(i[0])
         # ------------------------------- If multified option is active ----------------------
         if self.multifield:
             print("\t# of tokens in \'title\': " + str(len(self.index['title'])))
@@ -376,10 +397,6 @@ class SAR_Project:
             # Making permuterms 
             self.make_permuterm()
 
-            # Searching for the different fields
-            f = []
-            for i in self.fields:
-                f.append(i[0])
 
             for field in f:
                 i = 0
@@ -390,7 +407,15 @@ class SAR_Project:
             print("-" * 40)
 
         if self.stemming:
-            pass
+            print("STEMS:")
+            # Making permuterms 
+            self.make_stemming()
+
+            # Counting the different fields
+            for field in f:
+                print("\t# of tokens in \'",field,"\': " + str(len(self.sindex[field].keys())))
+            
+            print("-" * 40)
         else:
             pass
             #print("\t# of tokens in \'article\': " + str(len(self.index['article'])))
@@ -709,7 +734,7 @@ class SAR_Project:
         """
         
         stem = self.stemmer.stem(term)
-        return self.sindex.get(stem, [])
+        return self.sindex[field].get(stem, [])
         ####################################################
         ## COMPLETAR PARA FUNCIONALIDAD EXTRA DE STEMMING ##
         ####################################################
@@ -846,8 +871,6 @@ class SAR_Project:
 
         """
 
-        
-        
         ########################################
         ## COMPLETAR PARA TODAS LAS VERSIONES ##
         ########################################
@@ -951,7 +974,7 @@ class SAR_Project:
         ## COMPLETAR PARA TODAS LAS VERSIONES ##
         ########################################
 
-        print("=" * 40)
+        print("=" * 40) 
         print("Query: " + query)
         print("Number of results: " + str(len(result)))
         nr = 1
@@ -1027,16 +1050,123 @@ class SAR_Project:
 
         Ordena los resultados de una query.
 
-        param:  "result": lista de resultados sin ordenar
+        param:  "result": lista de resultados sin ordenar (id, posting)
                 "query": query, puede ser la query original, la query procesada o una lista de terminos
 
 
-        return: la lista de resultados ordenada
-
+        return: la lista de resultados ordenada     
         """
 
-        pass
+        # =================================== TRATAMIENTO DE RESULTS ===================================
+
+        # Query preprocessing, Obtenemos las palabras positivas y negativas
+        # ======================================================================================
+        q = query.split()
+
+        positiveQuery = []
+        negativeQuery = []
+        nop = ['AND', 'OR', 'NOT']
         
+        for t in range(len(q)):
+            if q[t] == 'NOT' and (t + 1) < len(q):
+                negativeQuery.append(q[t + 1])
+            
+            elif q[t] not in nop and q[t] not in negativeQuery:
+                positiveQuery.append(q[t])
+        
+        # ======================================================================================
+        #   Preparativos para la distancia coseno
+        # ======================================================================================
+        
+        consulta = {
+            'ftq':{},
+            'freq':{},
+            'df':{},
+            'tf':{},
+            'idf':{},
+            'wtd':{},
+        }
+
+
+        # Frecuencia de los terminos comunes, que serán sobre los que operaremos
+        documento = {}   
+        w = {}
+        tftd = {
+            'consulta':{},
+            'doc':{}
+        }
+
+        df = {
+            'consulta':{},
+            'doc':{}
+        }
+
+        idf = {
+            'consulta':{},
+            'doc':{}
+        }
+
+        if len(result) > 0:
+            for (r1, r2) in result:
+                    w[(r1, r2)] = {}
+                    documento[(r1, r2)] = {}
+                    for p in positiveQuery + negativeQuery:
+                            # ftd
+                            documento[(r1, r2)][p] = self.weight[p][r2] # ftd
+
+                            # tftd
+                            tftd['doc'][p] = (1 + math.log(documento[(r1, r2)][p],10)) if documento[(r1, r2)].get(p) > 0 else 0
+                            
+                            # df
+                            df['doc'][p] = len(self.weight[p].keys())
+
+                            # idf
+                            idf['doc'][p] = math.log((len(self.docs)) / df['doc'][p],10) if df['doc'][p] > 0 else 0 
+
+                            # w
+                            w[(r1,r2)][p] = tftd['doc'][p] * idf['doc'][p]
+
+        # Normalizado
+        for (r1, r2) in result:
+            wNorm = {}
+            media = 0.0
+            for k in w[(r1,r2)].keys():
+                media += w[(r1,r2)][k]**2
+            media = media**0.5
+
+            for p in w[(r1,r2)].keys():
+                w[(r1,r2)][p] = w[(r1,r2)][p] / media
+        #print(documento)
+        #print("TFTD:", tftd)
+        #print("DF:",df)
+        #print("IDF:", idf)
+        #print("W:", w)
+        '''
+            Como la Query siempre tendrá una palabra de cada, por lo tanto la frecuencia de las palabras de las query
+            siempre seran una unidad, asi pues, obtenemos las palabras dichas en el result, y ahora calcularemos en el
+            result los porcentajes y ordenadoremos en base a esto :)
+        '''
+        ranking = {}
+
+        for (r1, r2) in result:
+            r = 0
+            for p in positiveQuery:
+                r += abs(w[(r1,r2)][p])
+            for p in negativeQuery:
+                r -= abs(w[(r1,r2)][p])
+            ranking[round(r,3)] = [(r1,r2)] if ranking.get(round(r,3)) == None else ranking[round(r,3)] + [(r1,r2)]
+
+        # Obtengo los rankings ordenados
+        result = []
+        claves = list(ranking.keys())
+        
+        while len(claves) > 0:
+            mayor = max(claves)
+            result.append(ranking[mayor][0])
+            claves.pop(claves.index(mayor))
+
+
+        return result
         ###################################################
         ## COMPLETAR PARA FUNCIONALIDAD EXTRA DE RANKING ##
         ###################################################
