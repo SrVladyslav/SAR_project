@@ -11,7 +11,6 @@ class SAR_Project:
         
         Preparada para todas las ampliaciones:
           parentesis + multiples indices + posicionales + stemming + permuterm + ranking de resultado
-
     Se deben completar los metodos que se indica.
     Se pueden añadir nuevas variables y nuevos metodos
     Los metodos que se añadan se deberan documentar en el codigo y explicar en la memoria.Modificación
@@ -32,10 +31,8 @@ class SAR_Project:
         """
         Constructor de la classe SAR_Indexer.
         NECESARIO PARA LA VERSION MINIMA
-
         Incluye todas las variables necesaria para todas las ampliaciones.
         Puedes añadir más variables si las necesitas 
-
         """
         self.index = {
                 'title': {},
@@ -92,60 +89,44 @@ class SAR_Project:
 
     def set_showall(self, v):
         """
-
         Cambia el modo de mostrar los resultados.
         
         input: "v" booleano.
-
         UTIL PARA TODAS LAS VERSIONES
-
         si self.show_all es True se mostraran todos los resultados el lugar de un maximo de self.SHOW_MAX, no aplicable a la opcion -C
-
         """
         self.show_all = v
 
 
     def set_snippet(self, v):
         """
-
         Cambia el modo de mostrar snippet.
         
         input: "v" booleano.
-
         UTIL PARA TODAS LAS VERSIONES
-
         si self.show_snippet es True se mostrara un snippet de cada noticia, no aplicable a la opcion -C
-
         """
         self.show_snippet = v
 
 
     def set_stemming(self, v):
         """
-
         Cambia el modo de stemming por defecto.
         
         input: "v" booleano.
-
         UTIL PARA LA VERSION CON STEMMING
-
         si self.use_stemming es True las consultas se resolveran aplicando stemming por defecto.
-
         """
         self.use_stemming = v
 
 
     def set_ranking(self, v):
         """
-
         Cambia el modo de ranking por defecto.
         
         input: "v" booleano.
-
         UTIL PARA LA VERSION CON RANKING DE NOTICIAS
-
         si self.use_ranking es True las consultas se mostraran ordenadas, no aplicable a la opcion -C
-
         """
         self.use_ranking = v
 
@@ -165,7 +146,6 @@ class SAR_Project:
         
         Recorre recursivamente el directorio "root"  y indexa su contenido
         los argumentos adicionales "**args" solo son necesarios para las funcionalidades ampliadas
-
         """
         self.multifield = args['multifield']
         self.positional = args['positional']
@@ -186,17 +166,12 @@ class SAR_Project:
     def index_file(self, filename):
         """
         NECESARIO PARA TODAS LAS VERSIONES
-
         Indexa el contenido de un fichero.
-
         Para tokenizar la noticia se debe llamar a "self.tokenize"
-
         Dependiendo del valor de "self.multifield" y "self.positional" se debe ampliar el indexado.
         En estos casos, se recomienda crear nuevos metodos para hacer mas sencilla la implementacion
-
         input: "filename" es el nombre de un fichero en formato JSON Arrays (https://www.w3schools.com/js/js_json_arrays.asp).
                 Una vez parseado con json.load tendremos una lista de diccionarios, cada diccionario se corresponde a una noticia
-
         """
 
         with open(filename, encoding='utf-8') as fh:
@@ -285,14 +260,10 @@ class SAR_Project:
     def tokenize(self, text):
         """
         NECESARIO PARA TODAS LAS VERSIONES
-
         Tokeniza la cadena "texto" eliminando simbolos no alfanumericos y dividientola por espacios.
         Puedes utilizar la expresion regular 'self.tokenizer'.
-
         params: 'text': texto a tokenizar
-
         return: lista de tokens
-
         """
         return self.tokenizer.sub(' ', text.lower()).split()
 
@@ -301,11 +272,8 @@ class SAR_Project:
     def make_stemming(self):
         """
         NECESARIO PARA LA AMPLIACION DE STEMMING.
-
         Crea el indice de stemming (self.sindex) para los terminos de todos los indices.
-
         self.stemmer.stem(token) devuelve el stem del token
-
         """
         
         ####################################################
@@ -329,11 +297,9 @@ class SAR_Project:
     def make_permuterm(self):
         """
         NECESARIO PARA LA AMPLIACION DE PERMUTERM
-
         Crea el indice permuterm (self.ptindex) para los terminos de todos los indices.
         
         > self.ptindex[field][term]
-
         """
         ####################################################
         ## COMPLETAR PARA FUNCIONALIDAD EXTRA DE STEMMING ##
@@ -366,7 +332,7 @@ class SAR_Project:
 
                 for i in range(len(termino)):
                     termino = termino[1:] + termino[0]
-                    permutations.append(termino)
+                    permutations = permutations + [termino]
 
                 #self.ptindex['article'][termino] = len(permutations)
                 #self.ptindex['article'][termino] = permutations if self.ptindex['article'].get(termino) == None else self.ptindex['article'][termino] + termino 
@@ -412,13 +378,16 @@ class SAR_Project:
             print("PERMUTERMS:")
             # Making permuterms 
             self.make_permuterm()
-
             for field in f:
                 i = 0
-                for term in self.ptindex[field].keys():
-                    i += len(self.ptindex[field][term])
-
-                print("\t# of tokens in \'",field,"\': " + str(i))
+                if field == 'date':
+                    for t in self.num_days.keys():
+                        i += len(t) + 1
+                    print("\t# of tokens in \'",field,"\': " + str(i))
+                else:
+                    for term in self.ptindex[field].keys():
+                        i += len(self.ptindex[field][term])
+                    print("\t# of tokens in \'",field,"\': " + str(i))
             print("-" * 40)
 
         if self.stemming:
@@ -456,17 +425,11 @@ class SAR_Project:
     def solve_query(self, query, prev={}):
         """
         NECESARIO PARA TODAS LAS VERSIONES
-
         Resuelve una query.
         Debe realizar el parsing de consulta que sera mas o menos complicado en funcion de la ampliacion que se implementen
-
-
         param:  "query": cadena con la query
                 "prev": incluido por si se quiere hacer una version recursiva. No es necesario utilizarlo.
-
-
         return: posting list con el resultado de la query
-
         """
 
         if query is None or len(query) == 0:
@@ -506,7 +469,7 @@ class SAR_Project:
                 if ':' in qParts[i]:
                     mqParts = qParts[i].split(':')
                     nextP = self.get_posting(mqParts[1], mqParts[0])
-                elif '*' in qParts[i] or '?' in qParts[i]:
+                if '*' in qParts[i] or '?' in qParts[i]:
                     nextP = self.get_permuterm(qParts[i])
                     
                 else:
@@ -664,19 +627,14 @@ class SAR_Project:
     def get_posting(self, term, field='article'):
         """
         NECESARIO PARA TODAS LAS VERSIONES
-
         Devuelve la posting list asociada a un termino. 
         Dependiendo de las ampliaciones implementadas "get_posting" puede llamar a:
             - self.get_positionals: para la ampliacion de posicionales
             - self.get_permuterm: para la ampliacion de permuterms
             - self.get_stemming: para la amplaicion de stemming
-
-
         param:  "term": termino del que se debe recuperar la posting list.
                 "field": campo sobre el que se debe recuperar la posting list, solo necesario se se hace la ampliacion de multiples indices
-
         return: posting list
-
         """
         
         ########################################
@@ -695,14 +653,10 @@ class SAR_Project:
     def get_positionals(self, terms, field='article'):
         """
         NECESARIO PARA LA AMPLIACION DE POSICIONALES
-
         Devuelve la posting list asociada a una secuencia de terminos consecutivos.
-
         param:  "terms": lista con los terminos consecutivos para recuperar la posting list.
                 "field": campo sobre el que se debe recuperar la posting list, solo necesario se se hace la ampliacion de multiples indices
-
         return: posting list
-
         """
         
         ########################################################
@@ -752,14 +706,10 @@ class SAR_Project:
     def get_stemming(self, term, field='article'):
         """
         NECESARIO PARA LA AMPLIACION DE STEMMING
-
         Devuelve la posting list asociada al stem de un termino.
-
         param:  "term": termino para recuperar la posting list de su stem.
                 "field": campo sobre el que se debe recuperar la posting list, solo necesario se se hace la ampliacion de multiples indices
-
         return: posting list
-
         """
         
         stem = self.stemmer.stem(term)
@@ -772,14 +722,10 @@ class SAR_Project:
     def get_permuterm(self, term, field='article'):
         """
         NECESARIO PARA LA AMPLIACION DE PERMUTERM
-
         Devuelve la posting list asociada a un termino utilizando el indice permuterm.
-
         param:  "term": termino para recuperar la posting list, "term" incluye un comodin (* o ?).
                 "field": campo sobre el que se debe recuperar la posting list, solo necesario se se hace la ampliacion de multiples indices
-
         return: posting list
-
         """
         ##################################################
         ## COMPLETAR PARA FUNCIONALIDAD EXTRA PERMUTERM ##
@@ -794,7 +740,8 @@ class SAR_Project:
         query = term + '$'
         while query[-1] is not "*":
             query = query[1:] + query[0]
-
+        print(query)
+        print(query[:-1])
         # Searching for word, N squared O cost, but for this example is good due to 
         # optimization is not needed
         '''for permuterms in self.ptindex:
@@ -805,12 +752,12 @@ class SAR_Project:
                     #self.term_frequency[field][t]
         '''
         for perm in self.ptindex[field].keys():
-            print(permuterms)
             for t in self.ptindex[field][perm]:
-                if t.startswith(query[:-1]):
-                    print("Permuterm encontrado")
-                    resultado = resultado + [t]
+                    if query[:-1] in t:
+
+                        resultado = resultado + [t]
                     #self.term_frequency[field][t]
+        print(resultado)
         return resultado
 
 
@@ -819,16 +766,10 @@ class SAR_Project:
     def reverse_posting(self, p):
         """
         NECESARIO PARA TODAS LAS VERSIONES
-
         Devuelve una posting list con todas las noticias excepto las contenidas en p.
         Util para resolver las queries con NOT.
-
-
         param:  "p": posting list
-
-
         return: posting list con todos los newid exceptos los contenidos en p
-
         """
 
         
@@ -864,14 +805,9 @@ class SAR_Project:
     def and_posting(self, p1, p2):
         """
         NECESARIO PARA TODAS LAS VERSIONES
-
         Calcula el AND de dos posting list de forma EFICIENTE
-
         param:  "p1", "p2": posting lists sobre las que calcular
-
-
         return: posting list con los newid incluidos en p1 y p2
-
         """
         
         ########################################
@@ -897,14 +833,9 @@ class SAR_Project:
     def or_posting(self, p1, p2):
         """
         NECESARIO PARA TODAS LAS VERSIONES
-
         Calcula el OR de dos posting list de forma EFICIENTE
-
         param:  "p1", "p2": posting lists sobre las que calcular
-
-
         return: posting list con los newid incluidos de p1 o p2
-
         """
 
         ########################################
@@ -940,14 +871,10 @@ class SAR_Project:
     def minus_posting(self, p1, p2):
         """
         OPCIONAL PARA TODAS LAS VERSIONES
-
         Calcula el except de dos posting list de forma EFICIENTE.
         Esta funcion se propone por si os es util, no es necesario utilizarla.
-
         param:  "p1", "p2": posting lists sobre las que calcular
-
         return: posting list con los newid incluidos de p1 y no en p2
-
         """
         ########################################################
         ## COMPLETAR PARA TODAS LAS VERSIONES SI ES NECESARIO ##
@@ -955,7 +882,6 @@ class SAR_Project:
         '''result = []
         i = 0
         j = 0
-
         while i < len(p1) & j < len(p2):
             pass'''
         pass
@@ -974,13 +900,9 @@ class SAR_Project:
     def solve_and_count(self, query):
         """
         NECESARIO PARA TODAS LAS VERSIONES
-
         Resuelve una consulta y la muestra junto al numero de resultados 
-
         param:  "query": query que se debe resolver.
-
         return: el numero de noticias recuperadas, para la opcion -T
-
         """
         result = self.solve_query(query)
         print("%s\t%d" % (query, len(result)))
@@ -990,15 +912,11 @@ class SAR_Project:
     def solve_and_show(self, query):
         """
         NECESARIO PARA TODAS LAS VERSIONES
-
         Resuelve una consulta y la muestra informacion de las noticias recuperadas.
         Consideraciones:
-
         - En funcion del valor de "self.show_snippet" se mostrara una informacion u otra.
         - Si se implementa la opcion de ranking y en funcion del valor de self.use_ranking debera llamar a self.rank_result
-
         param:  "query": query que se debe resolver.
-
         return: el numero de noticias recuperadas, para la opcion -T
         
         """
@@ -1040,14 +958,11 @@ class SAR_Project:
         """
         Dados un documento y una noticia, imprime por cada término proporcionado 
         el primer snippet que lo contiene.
-
         param:  "terms": lista de terminos de los cuales queremos encontrar un snippet. Si el termino es de la forma "field:term" se buscará el el campo "field" de la noticia. Si no, se buscará en el artículo.
                 "docid": id del documento que contiene la noticia en la que queremos buscar los snippets.
                 "newid": id de la noticia en la cual queremos buscar los snippets.
                 "size":  longitud máxima en palabras de los snippets que se mostrarán.
-
         return: el numero de noticias recuperadas, para la opcion -T
-
         """
         path = self.docs[docid]
         myNew = self.news[newid]
@@ -1083,13 +998,9 @@ class SAR_Project:
     def rank_result(self, result, query):
         """
         NECESARIO PARA LA AMPLIACION DE RANKING
-
         Ordena los resultados de una query.
-
         param:  "result": lista de resultados sin ordenar (id, posting)
                 "query": query, puede ser la query original, la query procesada o una lista de terminos
-
-
         return: la lista de resultados ordenada     
         """
 
