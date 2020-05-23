@@ -482,6 +482,13 @@ class SAR_Project:
             #P.eje pasar de "h" a " h "
         qParts = query.split()
 
+        aux = 0
+
+        while aux < len(qParts):
+        	if qParts[aux] != "AND" and qParts[aux] != "NOT" and qParts[aux] != "OR":
+        		qParts[aux] = qParts[aux].lower()
+        	aux = aux + 1
+
         i = 0
         if qParts[i] == "AND" or qParts[i] == "OR":
             return result
