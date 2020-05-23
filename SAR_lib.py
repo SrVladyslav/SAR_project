@@ -239,8 +239,9 @@ class SAR_Project:
                         self.weight[token][self.newid] = 1 if self.weight[token].get(self.newid) == None else self.weight[token][self.newid] + 1
                 self.news[self.newid] = (self.docid, new["date"], new["title"], new["keywords"], nt)
                 self.newid += 1
+                
                 # COunters for TOKENS
-                self.num_days[new['date']] = 1# Days counter
+                self.num_days[new['date']] = 1 if self.num_days.get(new['date']) == None else self.num_days[new['date']] + 1# Days counter
 
         else:
             for new in jlist:
@@ -273,7 +274,9 @@ class SAR_Project:
                     self.news[self.newid] = (self.docid, new["date"], new["title"], new["keywords"], nt)
                     self.newid += 1
                     # COunters for TOKENS
-                    self.num_days[new['date']] = True # Days counter
+                    self.num_days[new['date']] = 1 if self.num_days.get(new['date']) == None else self.num_days[new['date']] + 1# Days counter
+                    # COunters for TOKENS
+                    #self.num_days[new['date']] = True # Days counter
         self.docid = self.docid + 1
 
 
@@ -356,7 +359,6 @@ class SAR_Project:
                         self.ptindex[f[field]][t] = permutations
                     else:
                         self.ptindex[f[field]][t] = self.ptindex[f[field]][t] + permutations
-                        print(self.ptindex[f[field]][t]) 
         else:
             for termino in self.index['article'].keys():
                 termino += '$'
@@ -411,7 +413,6 @@ class SAR_Project:
             # Making permuterms 
             self.make_permuterm()
 
-
             for field in f:
                 i = 0
                 for term in self.ptindex[field].keys():
@@ -426,9 +427,13 @@ class SAR_Project:
             self.make_stemming()
 
             # Counting the different fields
-            for field in f:
-                print("\t# of tokens in \'",field,"\': " + str(len(self.sindex[field].keys())))
-            
+            #for field in f:
+            #    print("\t# of tokens in \'",field,"\': " + str(len(self.sindex[field].keys())))
+            print("\t# of tokens in \'title\': " + str(len(self.sindex['title'].keys())))
+            print("\t# of tokens in \'date\': " + str(len(self.num_days)))
+            print("\t# of tokens in \'keywords\': " + str(len(self.sindex['keywords'].keys())))
+            print("\t# of tokens in \'article\': " + str(len(self.sindex['article'].keys())))
+            print("\t# of tokens in \'summary\': " + str(len(self.sindex['summary'].keys())))
             print("-" * 40)
 
         else:
@@ -1082,6 +1087,8 @@ class SAR_Project:
 
         # Query preprocessing, Obtenemos las palabras positivas y negativas
         # ======================================================================================
+        query = query.replace("(","")
+        query = query.replace(")","")
         q = query.split()
 
         positiveQuery = []
