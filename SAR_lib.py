@@ -383,6 +383,7 @@ class SAR_Project:
         print("Number of indexed news: " + str(len(self.news)))
         print("-" * 40)
         print("TOKENS:")
+        print("\t# of tokens in \'article\': " + str(len(self.index['article'])))
 
         # Searching for the different fields
         f = []
@@ -391,10 +392,10 @@ class SAR_Project:
         # ------------------------------- If multified option is active ----------------------
         if self.multifield:
             print("\t# of tokens in \'title\': " + str(len(self.index['title'])))
-            print("\t# of tokens in \'date\': " + str(len(self.num_days)))
+            print("\t# of tokens in \'date\': " + str(len(self.index['date'])))
             print("\t# of tokens in \'keywords\': " + str(len(self.index['keywords'])))
             print("\t# of tokens in \'article\': " + str(len(self.index['article'])))
-            print("\t# of tokens in \'summary\': " + str(len(self.index['summar0y'])))
+            print("\t# of tokens in \'summary\': " + str(len(self.index['summary'])))
             print("-" * 40)
 
         # ------------------------------- If permuterm option is active ----------------------
