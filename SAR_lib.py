@@ -356,8 +356,8 @@ class SAR_Project:
                         self.ptindex[f[field]][t] = permutations
                     else:
                         self.ptindex[f[field]][t] = self.ptindex[f[field]][t] + permutations
-                        print(self.ptindex[f[field]][t])
-                    else:
+                        print(self.ptindex[f[field]][t]) 
+        else:
             for termino in self.index['article'].keys():
                 termino += '$'
                 permutations = []
