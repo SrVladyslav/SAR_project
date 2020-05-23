@@ -240,7 +240,7 @@ class SAR_Project:
                 self.news[self.newid] = (self.docid, new["date"], new["title"], new["keywords"], nt)
                 self.newid += 1
                 # COunters for TOKENS
-                self.num_days[new['date']] = True # Days counter
+                self.num_days[new['date']] = 1# Days counter
 
         else:
             for new in jlist:
@@ -351,8 +351,13 @@ class SAR_Project:
                     for i in range(len(termino)):
                         termino = termino[1:] + termino[0]
                         permutations.append(termino)
-                    self.ptindex[f[field]][t] = len(permutations) if self.ptindex[f[field]].get(t) == None else self.ptindex[f[field]][t] + len(permutations)    
-        else:
+                    #self.ptindex[f[field]][t] = len(permutations) if self.ptindex[f[field]].get(t) == None else self.ptindex[f[field]][t] + len(permutations)
+                    if self.ptindex[f[field]].get(t) == None:
+                        self.ptindex[f[field]][t] = permutations
+                    else:
+                        self.ptindex[f[field]][t] = self.ptindex[f[field]][t] + permutations
+                        print(self.ptindex[f[field]][t])
+                    else:
             for termino in self.index['article'].keys():
                 termino += '$'
                 permutations = []
@@ -361,9 +366,12 @@ class SAR_Project:
                     termino = termino[1:] + termino[0]
                     permutations.append(termino)
 
-                self.ptindex['article'][termino] = len(permutations) 
-
-
+                #self.ptindex['article'][termino] = len(permutations)
+                #self.ptindex['article'][termino] = permutations if self.ptindex['article'].get(termino) == None else self.ptindex['article'][termino] + termino 
+                if self.ptindex['article'].get(termino) == None:
+                    self.ptindex['article'][termino] = permutations
+                else:
+                    self.ptindex['article'][termino] = self.ptindex['article'][termino] + permutations
 
 
     def show_stats(self):
@@ -392,7 +400,7 @@ class SAR_Project:
         # ------------------------------- If multified option is active ----------------------
         if self.multifield:
             print("\t# of tokens in \'title\': " + str(len(self.index['title'])))
-            print("\t# of tokens in \'date\': " + str(len(self.index['date'])))
+            print("\t# of tokens in \'date\': " + str(len(self.num_days)))#len(self.index['date'])))
             print("\t# of tokens in \'keywords\': " + str(len(self.index['keywords'])))
             print("\t# of tokens in \'article\': " + str(len(self.index['article'])))
             print("\t# of tokens in \'summary\': " + str(len(self.index['summary'])))
@@ -408,7 +416,7 @@ class SAR_Project:
             for field in f:
                 i = 0
                 for term in self.ptindex[field].keys():
-                    i += self.ptindex[field][term]
+                    i += len(self.ptindex[field][term])
 
                 print("\t# of tokens in \'",field,"\': " + str(i))
             print("-" * 40)
@@ -423,6 +431,7 @@ class SAR_Project:
                 print("\t# of tokens in \'",field,"\': " + str(len(self.sindex[field].keys())))
             
             print("-" * 40)
+
         else:
             pass
             #print("\t# of tokens in \'article\': " + str(len(self.index['article'])))
@@ -765,7 +774,8 @@ class SAR_Project:
         # Firstly we need to make the permuterm because of new files could be added
         self.make_permuterm()        
 
-        print("GET PERMUTERM!")
+
+        resultado = []
         # Now we will search for all the words that can be associated with the given term
         term = term.replace("?", "*")
         query = term + '$'
@@ -774,15 +784,21 @@ class SAR_Project:
 
         # Searching for word, N squared O cost, but for this example is good due to 
         # optimization is not needed
-        for permuterms in self.ptindex:
+        '''for permuterms in self.ptindex:
             for t in permuterms:
                 if t.startswith(query[:-1]):
                     print("Permuterm encontrado")
                     return self.index[field][t]
                     #self.term_frequency[field][t]
-
-        print("Permuterm no encontrado...")
-        return []
+        '''
+        for permuterms in self.ptindex[field]:
+            print(permuterms)
+            for t in permuterms:
+                if t.startswith(query[:-1]):
+                    print("Permuterm encontrado")
+                    resultado.appen(t)
+                    #self.term_frequency[field][t]
+        return resultado
 
 
 
