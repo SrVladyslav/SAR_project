@@ -794,12 +794,12 @@ class SAR_Project:
                     return self.index[field][t]
                     #self.term_frequency[field][t]
         '''
-        for permuterms in self.ptindex[field]:
+        for perm in self.ptindex[field].keys():
             print(permuterms)
-            for t in permuterms:
+            for t in self.ptindex[field][perm]:
                 if t.startswith(query[:-1]):
                     print("Permuterm encontrado")
-                    resultado.appen(t)
+                    resultado = resultado + [t]
                     #self.term_frequency[field][t]
         return resultado
 
