@@ -232,6 +232,7 @@ class SAR_Project:
                             self.index[field[0]][token][(self.docid, self.newid)].append(nt)
                            
                         nt = nt + 1     
+
                         # frecuencia de las palabras
                         if self.weight.get(token) == None:
                             self.weight[token] = {self.newid: 0}
@@ -254,9 +255,10 @@ class SAR_Project:
                                 if (self.docid, self.newid) not in self.index[field[0]][token]:
                                     self.index[field[0]][token][(self.docid, self.newid)] = []
                                 nt = nt + 1    
+                                
                                 # frecuencia de las palabras
                                 if self.weight.get(token) == None:
-                                  self.weight[token] = {self.newid: 0}
+                                    self.weight[token] = {self.newid: 0}
                                 self.weight[token][self.newid] = 1 if self.weight[token].get(self.newid) == None else self.weight[token][self.newid] + 1
                         else:
                             nt = 0
@@ -381,6 +383,7 @@ class SAR_Project:
         print("Number of indexed news: " + str(len(self.news)))
         print("-" * 40)
         print("TOKENS:")
+        print("\t# of tokens in \'article\': " + str(len(self.index['article'])))
 
         # Searching for the different fields
         f = []
@@ -389,10 +392,10 @@ class SAR_Project:
         # ------------------------------- If multified option is active ----------------------
         if self.multifield:
             print("\t# of tokens in \'title\': " + str(len(self.index['title'])))
-            print("\t# of tokens in \'date\': " + str(len(self.num_days)))
+            print("\t# of tokens in \'date\': " + str(len(self.index['date'])))
             print("\t# of tokens in \'keywords\': " + str(len(self.index['keywords'])))
             print("\t# of tokens in \'article\': " + str(len(self.index['article'])))
-            print("\t# of tokens in \'summary\': " + str(len(self.index['summar0y'])))
+            print("\t# of tokens in \'summary\': " + str(len(self.index['summary'])))
             print("-" * 40)
 
         # ------------------------------- If permuterm option is active ----------------------
