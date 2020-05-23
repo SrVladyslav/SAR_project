@@ -506,6 +506,9 @@ class SAR_Project:
                 if ':' in qParts[i]:
                     mqParts = qParts[i].split(':')
                     nextP = self.get_posting(mqParts[1], mqParts[0])
+                elif '*' in qParts[i] or '?' in qParts[i]:
+                    nextP = self.get_permuterm(qParts[i])
+                    
                 else:
                     nextP = self.get_posting(qParts[i])
 
