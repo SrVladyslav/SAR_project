@@ -232,6 +232,10 @@ class SAR_Project:
                             self.index[field[0]][token][(self.docid, self.newid)].append(nt)
                            
                         nt = nt + 1     
+                        # frecuencia de las palabras
+                        if self.weight.get(token) == None:
+                            self.weight[token] = {self.newid: 0}
+                        self.weight[token][self.newid] = 1 if self.weight[token].get(self.newid) == None else self.weight[token][self.newid] + 1
                 self.news[self.newid] = (self.docid, new["date"], new["title"], new["keywords"], nt)
                 self.newid += 1
                 # COunters for TOKENS
