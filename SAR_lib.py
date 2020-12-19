@@ -3,7 +3,7 @@ from nltk.stem.snowball import SnowballStemmer
 import os
 import re
 import math
-
+from spellsuggest import SpellSuggester
 
 class SAR_Project:
     """
@@ -86,6 +86,11 @@ class SAR_Project:
         self.term_frequency = {}
         # Searched terms in the query
         self.searched_terms = []
+        
+        # ALG
+        self.vocab = []
+        self.suggester = None
+        # ALG
 
     def set_showall(self, v):
         """
@@ -162,6 +167,10 @@ class SAR_Project:
         ## COMPLETAR PARA FUNCIONALIDADES EXTRA ##
         ##########################################
         
+        # ALG
+        self.suggester = SpellSuggester(self.vocab)
+        # ALG
+        
 
     def index_file(self, filename):
         """
@@ -212,6 +221,13 @@ class SAR_Project:
                         if self.weight.get(token) == None:
                             self.weight[token] = {self.newid: 0}
                         self.weight[token][self.newid] = 1 if self.weight[token].get(self.newid) == None else self.weight[token][self.newid] + 1
+                        
+                        # ALG
+                        if token not in self.vocab:
+                            self.vocab.append(token)
+                        # ALG
+                        
+                        
                 self.news[self.newid] = (self.docid, new["date"], new["title"], new["keywords"], nt)
                 self.newid += 1
                 
@@ -236,6 +252,13 @@ class SAR_Project:
                                 if self.weight.get(token) == None:
                                     self.weight[token] = {self.newid: 0}
                                 self.weight[token][self.newid] = 1 if self.weight[token].get(self.newid) == None else self.weight[token][self.newid] + 1
+                                
+                                                        
+                                # ALG
+                                if token not in self.vocab:
+                                    self.vocab.append(token)
+                                # ALG
+                                
                         else:
                             nt = 0
                             token = new[field[0]]
@@ -645,8 +668,26 @@ class SAR_Project:
         # NO me lo toqueis, es mio
         #return self.index[term]
 
-        self.searched_terms.append(field + ":" + term)
-        return self.index[field].get(term, [])
+        # self.searched_terms.append(field + ":" + term)
+        # return self.index[field].get(term, [])
+        
+        #ALG
+        
+        op = self.suggester.suggest(term, "intermediate", 2)
+        result = self.index[field].get(term, [])
+        for word in op:
+            if word != term:
+                self.searched_terms.append(field + ":" + word)
+                tmp = self.index[field].get(word, [])
+                if len(tmp) > 0:
+                    result = list(result)
+                    result.sort()
+                    tmp = list(tmp)
+                    tmp.sort()
+                    result = self.or_posting(result, tmp)
+        return result
+        
+        #ALG
 
 
 

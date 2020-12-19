@@ -9,18 +9,18 @@ class SpellSuggester:
     Clase que implementa el método suggest para la búsqueda de términos.
     """
 
-    def __init__(self, vocab_file_path):
+    def __init__(self, vocab):
         """Método constructor de la clase SpellSuggester
 
         Construye una lista de términos únicos (vocabulario),
         que además se utiliza para crear un trie.
 
         Args:
-            vocab_file (str): ruta del fichero de texto para cargar el vocabulario.
+            vocab: vocabulario.
 
         """
 
-        self.vocabulary  = self.build_vocab(vocab_file_path, tokenizer=re.compile("\W+"))
+        self.vocabulary = vocab
 
     def build_vocab(self, vocab_file_path, tokenizer):
         """Método para crear el vocabulario.
