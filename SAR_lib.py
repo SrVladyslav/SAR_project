@@ -674,6 +674,14 @@ class SAR_Project:
         #ALG
         
         op = self.suggester.suggest(term, "intermediate", 2)
+        varOp = list(op.values())
+        
+        #Si el termino introducido sí existe, no hace busqueda difusa
+        exist = varOp.count(0)
+        if exist > 0:
+            self.searched_terms.append(field + ":" + term)
+            return self.index[field].get(term, [])
+            
         result = self.index[field].get(term, [])
         for word in op:
             if word != term:
@@ -685,6 +693,7 @@ class SAR_Project:
                     tmp = list(tmp)
                     tmp.sort()
                     result = self.or_posting(result, tmp)
+        
         return result
         
         #ALG
