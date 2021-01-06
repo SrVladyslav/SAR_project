@@ -671,7 +671,7 @@ class SAR_Project:
         # self.searched_terms.append(field + ":" + term)
         # return self.index[field].get(term, [])
         
-        #ALG
+        #ALG - Approved
         
         op = self.suggester.suggest(term, "intermediate", 2)
         result = self.index[field].get(term, [])
@@ -680,7 +680,7 @@ class SAR_Project:
                 self.searched_terms.append(field + ":" + word)
                 tmp = self.index[field].get(word, [])
                 if len(tmp) > 0:
-                    result = list(result)
+                    result = list(result)  # el Get ya devuelve una lista por defecto, para que el cast??
                     result.sort()
                     tmp = list(tmp)
                     tmp.sort()
