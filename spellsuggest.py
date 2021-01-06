@@ -35,7 +35,7 @@ class SpellSuggester:
         """
         with open(vocab_file_path, "r", encoding='utf-8') as fr:
             vocab = set(tokenizer.split(fr.read().lower()))
-            vocab.discard('') # por si acaso
+            vocab.discard('') # por si acaso, OKI :)
             return sorted(vocab)
 
     def suggest(self, term, distance="levenshtein", threshold=None):
@@ -67,7 +67,8 @@ class SpellSuggester:
             if threshold == None:
                 results[word] = int(distanceFunc(term, word))
             else:
-                if len(word) <= len(term) + threshold:
+                #if len(word) <= len(term) + threshold:          # Hmmm, no entiendo bein el threshold
+                if abs(len(tenm) - len(word)) <= threshold:     # Pa que duplicar comprobaciones? :(
                     d = distanceFunc(term, word, threshold)
                     if d != None and d <= threshold:
                         results[word] = int(d)
