@@ -686,33 +686,39 @@ class SAR_Project:
 
         #print(self.errors)
         #self.errors = []
-        op = self.suggester.suggest(term, "intermediate", 2)
-        varOp = list(op.values())
-        
-        #Si el termino introducido sí existe, no hace busqueda difusa
-        exist = varOp.count(0)
-        if exist > 0:
+        if SAR_Project.use_suggest:
+            op = self.suggester.suggest(term, "intermediate", 2)
+            varOp = list(op.values())
+            
+            #Si el termino introducido sí existe, no hace busqueda difusa
+            
+            exist = varOp.count(0)
+            if exist > 0:
+                self.searched_terms.append(field + ":" + term)
+                return self.index[field].get(term, [])
+                
+            result = self.index[field].get(term, [])
+            for word in op:
+                if word != term:
+                    #error = "La palabra "+ term + " no existe " + " ¿querrás decir " + word + " ?"
+                    #SAR_Project.surg.append(error)
+                    #print(SAR_Project.surg)
+                    
+                    self.searched_terms.append(field + ":" + word)
+                    tmp = self.index[field].get(word, [])
+                    
+                    if len(tmp) > 0:
+                        result = list(result)  # el Get ya devuelve una lista por defecto, para que el cast??
+                        result.sort()
+                        tmp = list(tmp)
+                        tmp.sort()
+                        result = self.or_posting(result, tmp)
+        else:
             self.searched_terms.append(field + ":" + term)
             return self.index[field].get(term, [])
-            
-        result = self.index[field].get(term, [])
-        for word in op:
-            if word != term:
-                #error = "La palabra "+ term + " no existe " + " ¿querrás decir " + word + " ?"
-                #SAR_Project.surg.append(error)
-                #print(SAR_Project.surg)
-                
-                self.searched_terms.append(field + ":" + word)
-                tmp = self.index[field].get(word, [])
-                
-                if len(tmp) > 0:
-                    result = list(result)  # el Get ya devuelve una lista por defecto, para que el cast??
-                    result.sort()
-                    tmp = list(tmp)
-                    tmp.sort()
-                    result = self.or_posting(result, tmp)
+        
                     
-        #print(result)
+
         return result
         
         #ALG
