@@ -1021,6 +1021,7 @@ class SAR_Project:
                                 
 
 
+<<<<<<< HEAD
                     #Nodifusa = list( set( SAR_Project.surg) & ( set(SAR_Project.inputTerm )) )
                     difusa = list( set(Nodifusa).symmetric_difference( set(SAR_Project.inputTerm )) )
                     #print("Termino no existe: ")
@@ -1040,6 +1041,27 @@ class SAR_Project:
                         #if difusa[i] != SAR_Project.surg[i] :
                             #print("El termino " + difusa[i] + " no existe, ¿querrás decir " + SAR_Project.surg[i] + "?" )
                     #ALG
+=======
+                #Nodifusa = list( set( SAR_Project.surg) & ( set(SAR_Project.inputTerm )) )
+                difusa = list( set(Nodifusa).symmetric_difference( set(SAR_Project.inputTerm )) )
+                #print("Termino no existe: ")
+                #print(difusa)
+                #print("Termino existe ")
+                #print(Nodifusa)
+                for i in range(0, len(difusa) ):
+                    op = self.suggester.suggest(difusa[i], "intermediate", 2)
+                    self.find_term(op,r[0],r[1],15)
+                    #print(len(difusa))
+                    #print(len(SAR_Project.surg))
+                    if len(SAR_Project.surg) > 0:
+                        print("El término " + difusa[i] + " no existe, ¿querrás decir " + SAR_Project.surg[0] + "?" )
+                #for i in range(0, len(difusa) ):
+                    #print(SAR_Project.inputTerm[i])
+                    #print(SAR_Project.surg[i])
+                    #if difusa[i] != SAR_Project.surg[i] :
+                        #print("El termino " + difusa[i] + " no existe, ¿querrás decir " + SAR_Project.surg[i] + "?" )
+                #ALG
+>>>>>>> 2f28e0101392a3b9e5a5b00b4f2b55d22385c4f5
                     
                 
             else:
