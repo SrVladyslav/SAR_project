@@ -39,6 +39,9 @@ if __name__ == "__main__":
 
     parser.add_argument('-R', '--rank', dest='rank', action='store_true', default=False, 
                     help='rank results. Does not apply with -C and -T options.')
+    
+    parser.add_argument('-D', '--sugg', dest='suggest', action='store_true', default=False, 
+                    help='give suggestion if the input is not recognised.')
 
 
     group1 = parser.add_mutually_exclusive_group()
@@ -58,6 +61,7 @@ if __name__ == "__main__":
     searcher.set_ranking(args.rank)
     searcher.set_showall(args.all)
     searcher.set_snippet(args.snippet)
+    searcher.set_suggest(args.suggest)
 
 
     # se debe contar o mostrar resultados?
