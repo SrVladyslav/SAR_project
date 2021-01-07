@@ -68,7 +68,7 @@ class SpellSuggester:
                 results[word] = int(distanceFunc(term, word))
             else:
                 #if len(word) <= len(term) + threshold:          # Hmmm, no entiendo bein el threshold
-                if abs(len(tenm) - len(word)) <= threshold:     # Pa que duplicar comprobaciones? :(
+                if abs(len(term) - len(word)) <= threshold:     # Pa que duplicar comprobaciones? :(
                     d = distanceFunc(term, word, threshold)
                     if d != None and d <= threshold:
                         results[word] = int(d)

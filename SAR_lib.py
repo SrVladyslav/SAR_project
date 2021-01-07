@@ -26,7 +26,8 @@ class SAR_Project:
     # numero maximo de documento a mostrar cuando self.show_all es False
     SHOW_MAX = 10
 
-
+    surg = []
+    inputTerm = []
     def __init__(self):
         """
         Constructor de la classe SAR_Indexer.
@@ -34,6 +35,7 @@ class SAR_Project:
         Incluye todas las variables necesaria para todas las ampliaciones.
         Puedes añadir más variables si las necesitas 
         """
+
         self.index = {
                 'title': {},
                 'date': {},
@@ -67,6 +69,8 @@ class SAR_Project:
         self.use_stemming = False # valor por defecto, se cambia con self.set_stemming()
         self.use_ranking = False  # valor por defecto, se cambia con self.set_ranking()
 
+
+
     ###############################
     ###                         ###
     ###      CONFIGURACION      ###
@@ -90,8 +94,11 @@ class SAR_Project:
         # ALG
         self.vocab = []
         self.suggester = None
+        
+         
+        
         # ALG
-
+    
     def set_showall(self, v):
         """
         Cambia el modo de mostrar los resultados.
@@ -327,7 +334,7 @@ class SAR_Project:
         ####################################################
         ## COMPLETAR PARA FUNCIONALIDAD EXTRA DE STEMMING ##
         ####################################################
-        
+
         if self.multifield:
             # Searching for the different fields
             f = []
@@ -454,13 +461,15 @@ class SAR_Project:
                 "prev": incluido por si se quiere hacer una version recursiva. No es necesario utilizarlo.
         return: posting list con el resultado de la query
         """
-
+        #print(self.errors)
+        
         if query is None or len(query) == 0:
             return []
 
         ########################################
         ## COMPLETAR PARA TODAS LAS VERSIONES ##
         ########################################
+        SAR_Project.inputTerm = query.replace("AND","" ).replace("OR","").replace("NOT","").split()
         result = []
         self.searched_terms = []
         if '\"' in query:
@@ -672,7 +681,9 @@ class SAR_Project:
         # return self.index[field].get(term, [])
         
         #ALG - Approved
-        
+
+        #print(self.errors)
+        #self.errors = []
         op = self.suggester.suggest(term, "intermediate", 2)
         varOp = list(op.values())
         
@@ -685,15 +696,21 @@ class SAR_Project:
         result = self.index[field].get(term, [])
         for word in op:
             if word != term:
+                #error = "La palabra "+ term + " no existe " + " ¿querrás decir " + word + " ?"
+                #SAR_Project.surg.append(error)
+                #print(SAR_Project.surg)
+                
                 self.searched_terms.append(field + ":" + word)
                 tmp = self.index[field].get(word, [])
+                
                 if len(tmp) > 0:
                     result = list(result)  # el Get ya devuelve una lista por defecto, para que el cast??
                     result.sort()
                     tmp = list(tmp)
                     tmp.sort()
                     result = self.or_posting(result, tmp)
-        
+                    
+        #print(result)
         return result
         
         #ALG
@@ -715,6 +732,7 @@ class SAR_Project:
         result = []
 
         diccionario_result = {}
+
         inicial = self.get_posting(terms[0])
         if len(terms) == 1:
             return inicial
@@ -788,7 +806,7 @@ class SAR_Project:
         # Now we will search for all the words that can be associated with the given term
         term = term.replace("?", "*")
         query = term + '$'
-        while query[-1] is not "*":
+        while query[-1] != "*":
             query = query[1:] + query[0]
         print(query)
         print(query[:-1])
@@ -971,8 +989,9 @@ class SAR_Project:
         
         """
         result = self.solve_query(query)
+
         if self.use_ranking:
-            result = self.rank_result(result, query)   
+            result = self.rank_result(result, query)
 
         ########################################
         ## COMPLETAR PARA TODAS LAS VERSIONES ##
@@ -986,6 +1005,18 @@ class SAR_Project:
             new = self.news[r[1]]
             if not self.show_snippet:
                 print("#" + str(nr) + "\t(0) (" + str(r[1]) + ") (" + str(new[1]) + ") " + str(new[2]) + " (" + str(new[3]) + ")")
+                
+                #ALG
+                self.find_term(self.searched_terms,r[0],r[1],15)
+
+                for i in range(0, len(SAR_Project.inputTerm) ):
+                    print(SAR_Project.inputTerm[i])
+                    print(SAR_Project.surg[i])
+                    #if SAR_Project.inputTerm[i] != SAR_Project.surg[i] :
+                            #print("El termino " + SAR_Project.inputTerm[i] + " no existe, ¿querrás decir " + SAR_Project.surg[i] + "?" )
+                #ALG
+                    
+                
             else:
                 print("#" + str(nr))
                 print("Score: " + str(0))
@@ -1041,7 +1072,46 @@ class SAR_Project:
                         snip = snip + tokens[j] + " "
                     snip = snip + "..."
                     print(snip)
+    
+    
+    #ALG
+    def find_term(self, terms, docid, newid, size):
+        """
+        Dados un documento y una noticia, imprime por cada término proporcionado 
+        el primer snippet que lo contiene.
+        param:  "terms": lista de terminos de los cuales queremos encontrar un snippet. Si el termino es de la forma "field:term" se buscará el el campo "field" de la noticia. Si no, se buscará en el artículo.
+                "docid": id del documento que contiene la noticia en la que queremos buscar los snippets.
+                "newid": id de la noticia en la cual queremos buscar los snippets.
+                "size":  longitud máxima en palabras de los snippets que se mostrarán.
+        return: el numero de noticias recuperadas, para la opcion -T
+        """
+        SAR_Project.surg = []
+        path = self.docs[docid]
+        myNew = self.news[newid]
+        targetNew = None
+        with open(path) as fh:
+            jlist = json.load(fh)
+            for new in jlist:
+                if (new["title"] == myNew[2]) & (new["date"] == myNew[1]):
+                    targetNew = new
+                    break
+            
+            for term in terms:
+                field = "article"
+                if ':' in term:
+                    field = term.split(':')[0]
+                    term = term.split(':')[1]
+                tokens = self.tokenize(targetNew[field])
+                pos = -1
+                for i,token in enumerate(tokens):
+                    if token == term:
+                        SAR_Project.surg.append(token)
 
+                        pos = i
+                        break
+
+                    
+    #ALG
 
 
 
