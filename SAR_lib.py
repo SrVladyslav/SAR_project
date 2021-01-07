@@ -1019,24 +1019,24 @@ class SAR_Project:
                             if (self.searched_terms[i][pos+1:] == SAR_Project.inputTerm[j]):
                                 Nodifusa.append(SAR_Project.inputTerm[j])
                     
-                #Nodifusa = list( set( SAR_Project.surg) & ( set(SAR_Project.inputTerm )) )
-                difusa = list( set(Nodifusa).symmetric_difference( set(SAR_Project.inputTerm )) )
-                #print("Termino no existe: ")
-                #print(difusa)
-                #print("Termino existe ")
-                #print(Nodifusa)
-                for i in range(0, len(difusa) ):
-                    op = self.suggester.suggest(difusa[i], "intermediate", 2)
-                    self.find_term(op,r[0],r[1],15)
-                    #print(len(difusa))
-                    #print(len(SAR_Project.surg))
-                    if len(SAR_Project.surg) > 0:
-                        print("El término " + difusa[i] + " no existe, ¿querrás decir " + SAR_Project.surg[0] + "?" )
-                #for i in range(0, len(difusa) ):
-                    #print(SAR_Project.inputTerm[i])
-                    #print(SAR_Project.surg[i])
-                    #if difusa[i] != SAR_Project.surg[i] :
-                        #print("El termino " + difusa[i] + " no existe, ¿querrás decir " + SAR_Project.surg[i] + "?" )
+                    #Nodifusa = list( set( SAR_Project.surg) & ( set(SAR_Project.inputTerm )) )
+                    difusa = list( set(Nodifusa).symmetric_difference( set(SAR_Project.inputTerm )) )
+                    #print("Termino no existe: ")
+                    #print(difusa)
+                    #print("Termino existe ")
+                    #print(Nodifusa)
+                    for i in range(0, len(difusa) ):
+                        op = self.suggester.suggest(difusa[i], "intermediate", 2)
+                        self.find_term(op,r[0],r[1],15)
+                        #print(len(difusa))
+                        #print(len(SAR_Project.surg))
+                        if len(SAR_Project.surg) > 0:
+                            print("El término " + difusa[i] + " no existe, ¿querrás decir " + SAR_Project.surg[0] + "?" )
+                    #for i in range(0, len(difusa) ):
+                        #print(SAR_Project.inputTerm[i])
+                        #print(SAR_Project.surg[i])
+                        #if difusa[i] != SAR_Project.surg[i] :
+                            #print("El termino " + difusa[i] + " no existe, ¿querrás decir " + SAR_Project.surg[i] + "?" )
 
                     
                 
