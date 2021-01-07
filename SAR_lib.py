@@ -1030,7 +1030,7 @@ class SAR_Project:
                     #print(len(difusa))
                     #print(len(SAR_Project.surg))
                     if len(SAR_Project.surg) > 0:
-                        print("El termino " + difusa[i] + " no existe, ¿querrás decir " + SAR_Project.surg[0] + "?" )
+                        print("El término " + difusa[i] + " no existe, ¿querrás decir " + SAR_Project.surg[0] + "?" )
                 #for i in range(0, len(difusa) ):
                     #print(SAR_Project.inputTerm[i])
                     #print(SAR_Project.surg[i])
