@@ -1005,15 +1005,37 @@ class SAR_Project:
             new = self.news[r[1]]
             if not self.show_snippet:
                 print("#" + str(nr) + "\t(0) (" + str(r[1]) + ") (" + str(new[1]) + ") " + str(new[2]) + " (" + str(new[3]) + ")")
-                
-                #ALG
-                self.find_term(self.searched_terms,r[0],r[1],15)
 
-                for i in range(0, len(SAR_Project.inputTerm) ):
-                    print(SAR_Project.inputTerm[i])
-                    print(SAR_Project.surg[i])
-                    #if SAR_Project.inputTerm[i] != SAR_Project.surg[i] :
-                            #print("El termino " + SAR_Project.inputTerm[i] + " no existe, ¿querrás decir " + SAR_Project.surg[i] + "?" )
+                #ALG
+                Nodifusa = []
+                for i in range(0,len( self.searched_terms)):
+                    for j in range(0,len( SAR_Project.inputTerm )):
+                        pos = self.searched_terms[i].find(":")
+                        #print(self.searched_terms[i][pos+1:])
+                        #print(SAR_Project.inputTerm[j])
+                        if (self.searched_terms[i][pos+1:] == SAR_Project.inputTerm[j]):
+                            Nodifusa.append(SAR_Project.inputTerm[j])
+                            
+
+
+                #Nodifusa = list( set( SAR_Project.surg) & ( set(SAR_Project.inputTerm )) )
+                difusa = list( set(Nodifusa).symmetric_difference( set(SAR_Project.inputTerm )) )
+                #print("Termino no existe: ")
+                #print(difusa)
+                #print("Termino existe ")
+                #print(Nodifusa)
+                for i in range(0, len(difusa) ):
+                    op = self.suggester.suggest(difusa[i], "intermediate", 2)
+                    self.find_term(op,r[0],r[1],15)
+                    #print(len(difusa))
+                    #print(len(SAR_Project.surg))
+                    if len(SAR_Project.surg) > 0:
+                        print("El termino " + difusa[i] + " no existe, ¿querrás decir " + SAR_Project.surg[0] + "?" )
+                #for i in range(0, len(difusa) ):
+                    #print(SAR_Project.inputTerm[i])
+                    #print(SAR_Project.surg[i])
+                    #if difusa[i] != SAR_Project.surg[i] :
+                        #print("El termino " + difusa[i] + " no existe, ¿querrás decir " + SAR_Project.surg[i] + "?" )
                 #ALG
                     
                 
@@ -1085,6 +1107,7 @@ class SAR_Project:
                 "size":  longitud máxima en palabras de los snippets que se mostrarán.
         return: el numero de noticias recuperadas, para la opcion -T
         """
+
         SAR_Project.surg = []
         path = self.docs[docid]
         myNew = self.news[newid]
@@ -1098,9 +1121,6 @@ class SAR_Project:
             
             for term in terms:
                 field = "article"
-                if ':' in term:
-                    field = term.split(':')[0]
-                    term = term.split(':')[1]
                 tokens = self.tokenize(targetNew[field])
                 pos = -1
                 for i,token in enumerate(tokens):
@@ -1109,7 +1129,10 @@ class SAR_Project:
 
                         pos = i
                         break
-
+        #print(set(SAR_Project.surg) & set(SAR_Project.inputTerm))
+        #if len(set(SAR_Project.surg) & set(SAR_Project.inputTerm)) == len(SAR_Project.inputTerm):
+        #    SAR_Project.surg = SAR_Project.inputTerm
+            
                     
     #ALG
 
